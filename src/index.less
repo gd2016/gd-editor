@@ -1,7 +1,7 @@
 .dls-m-editor{
   width: 100%;
   outline: none;
-  .content{
+  .dls-m-editor-content{
     border-bottom: 1px solid #d1d1d1;
     padding: 20px;
     word-wrap: break-word;
@@ -15,13 +15,18 @@
     }
     .m-editor-block{
       -webkit-user-modify: read-only;
-      text-align: center;
-      border: 2px solid white;
-      &:hover{
+      text-align: left;
+      width: 100%;
+      &.active img{
         border: 2px solid #5f97f7;
       }
-      &.active{
-        border: 2px solid #5f97f7;
+      img{
+        max-width: 320px;
+        cursor: pointer;
+        border: 2px solid white;
+        &:hover{
+          border: 2px solid #5f97f7;
+        }
       }
     }
   }
@@ -34,6 +39,7 @@
       display: inline-block;
       height: 18px;
       border: 1px white solid;
+      box-sizing: initial;
       &:hover{
         border: 1px #bcbcbc solid;
         background: rgb(216, 216, 216);

@@ -1,6 +1,4 @@
 import test from '../src/index'
-import imgPlugin from './imgPlugin'
-import imgPlugin2 from './plugin2'
 const editor = new test({
   container: document.querySelector('#editor-area'),
   content: [{
@@ -9,6 +7,9 @@ const editor = new test({
   }, {
     type: 'TEXT',
     text: '12312cx xc asd     as d'
+  }, {
+    type: 'IMAGE',
+    url: '//pic.evatlas.com/test-image942/7e45dc8d854f4bc0b3b18e72f441b57c'
   }],
   onReady: (editor) => {
     // editor.setData([{
@@ -22,14 +23,14 @@ const editor = new test({
     //   text: '12312cx xc asd     as d'
     // }])
   },
-  toolbar: ['image', 'image2'],
-  plugins: [{
-    constructor: imgPlugin,
-    name: 'image'
-  }, {
-    constructor: imgPlugin2,
-    name: 'image2'
-  }]
+  toolbar: ['image']
+  // plugins: [{
+  //   constructor: imgPlugin,
+  //   name: 'image'
+  // }, {
+  //   constructor: imgPlugin2,
+  //   name: 'image2'
+  // }]
 })
 
 document.querySelector('#getData').addEventListener('click', () => {

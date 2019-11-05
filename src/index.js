@@ -1,17 +1,23 @@
 import './index.less'
-
+import imagePlugin from './image'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: [],
+      toolbar: ['image'],
       plugins: [],
+      basePlugins: [{
+        constructor: imagePlugin,
+        name: 'image'
+      }],
       minHeight: 200,
       maxHeight: 400000,
       content: '',
-      onReady (editor) {},
-      setFormat (content) { return content },
-      getFormat (rs) { return rs }
+      imgHost: '//pic.evatlas.com',
+      host: '__ALLHISTORY_HOSTNAME__',
+      url: '/api/image/upload',
+      formName: 'userfile',
+      onReady (editor) {}
     }, props)
     this._init()
   }
@@ -23,54 +29,63 @@ export default class MEditor {
     this._bind()
     this.onReady(this)
   }
+
   _initContent () {
     if (this.content) this.setData(this.content)
   }
 
   _initPlugins () {
-    if (this.plugins.length) {
-      this.plugins.forEach(plugin => {
+    this._newPlugins(this.basePlugins)
+    this._newPlugins(this.plugins)
+  }
+  _newPlugins (plugins) {
+    if (plugins.length) {
+      plugins.forEach(plugin => {
         const pluginName = this._toCamelCase(plugin.name)
         if (!this[pluginName]) {
-          this[pluginName] = new plugin.constructor({ $editor: this })
-          document.querySelector(`.dls-${plugin.name}-icon`).onclick = () => {
-            this[pluginName].initCommand(this)
+          this[pluginName] = new plugin.constructor({ editor: this, host: this.host, imgHost: this.imgHost, url: this.url, formName: this.formName })
+          document.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
+            this[pluginName].initCommand()
           }
           this[pluginName].init && this[pluginName].init(this.editor)
-          // this[pluginName].command && this.editor.addCommand(this[pluginName].command, command)
           if (this[pluginName].label) {
-            document.querySelector(`.dls-${plugin.name}-icon`).setAttribute('title', this[pluginName].label)
+            document.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
           }
         }
       })
     }
   }
+  _setRange (node) {
+    const range = document.createRange()
+    range.selectNodeContents(node)
+    range.collapse(true)
+    var sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+    this.selection = sel.getRangeAt(0)
+  }
   insertHtml (domStr, isContain) {
-    if (!this.selection) return
     const objE = document.createElement('div')
-    let empty
     objE.innerHTML = domStr
+    if (!this.selection) {
+      this.contentContainer.prepend(objE.childNodes[0])
+      return
+    }
     if (isContain) {
       this.selection.insertNode(objE.childNodes[0])
     } else {
       const rangeNode = this.selection.endContainer
-      const range = document.createRange()
       if (rangeNode.nodeName === '#text') {
         this.contentContainer.insertBefore(objE.childNodes[0], rangeNode.parentNode.nextSibling)
-        empty = document.createElement('p')
+        const empty = document.createElement('p')
         empty.innerHTML = '<br>'
         this.contentContainer.insertBefore(empty, rangeNode.parentNode.nextSibling.nextSibling)
-        range.selectNodeContents(empty)
+        this._setRange(empty)
       }
       if (rangeNode.nodeName === 'P') {
         this.contentContainer.insertBefore(objE.childNodes[0], rangeNode)
-        range.selectNodeContents(rangeNode)
+        this._setRange(rangeNode)
       }
-      range.collapse(true)
-      var sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
-      this.selection = sel.getRangeAt(0)
     }
   }
   _initDom () {
@@ -87,7 +102,7 @@ export default class MEditor {
     this.box.appendChild(this.toolbarDom)
     let iconStr = ''
     this.toolbar.forEach(element => {
-      iconStr += `<a class='icon-container'><span class='dls-${element}-icon'></span></a>`
+      iconStr += `<a class='icon-container dls-${element}-icon-container'><span class='dls-${element}-icon'></span></a>`
     })
     this.toolbarDom.innerHTML = iconStr
   }
@@ -100,7 +115,7 @@ export default class MEditor {
   _initContentDom () {
     this.contentContainer = document.createElement('div')
     this.contentContainer.innerHTML = '<p><br></p>'
-    this.contentContainer.classList.add('content')
+    this.contentContainer.classList.add('dls-m-editor-content')
     this.contentContainer.setAttribute('contenteditable', true)
     this.contentContainer.style.minHeight = this.minHeight + 'px'
     this.contentContainer.style.maxHeight = this.maxHeight + 'px'
@@ -120,21 +135,32 @@ export default class MEditor {
       this.contentContainer.innerHTML = '<p><br></p>'
     }
     if (e.code === 'Backspace') {
-      if (this.contentContainer.innerHTML === '<p><br></p>') {
-        e.preventDefault()
+      if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
+        this.contentContainer.innerHTML = '<p><br></p>'
       }
-      if (this.block) {
+      if (this.block) { // 删除高亮块
         this.block.parentNode.removeChild(this.block)
         this.block = null
         return e.preventDefault()
       }
-      if (this.selection.endContainer.nodeName === 'P' && this.selection.endContainer.innerHTML === '<br>') {
+      if (this.selection.endContainer.nodeName === 'P' && this.selection.endContainer.innerHTML === '<br>') { // 空内容时，按键后选中一个块
         const preDom = this.selection.endContainer.previousSibling
         if (preDom && preDom.classList.contains('m-editor-block')) {
           this.block = preDom
           this.block.classList.add('active')
           e.preventDefault()
         }
+      }
+    } else {
+      if (this.block) {
+        this.block.classList.remove('active')
+        if (!this.block.nextSibling) {
+          const empty = document.createElement('p')
+          empty.innerHTML = '<br>'
+          this.block.parentNode.insertBefore(empty, this.block.nextSibling)
+          this._setRange(empty)
+        }
+        this.block = null
       }
     }
   }
@@ -204,11 +230,24 @@ export default class MEditor {
             text: ''
           })
         } else {
-          dataArray.push({
-            type: 'TEXT',
-            text: node.innerText
+          node.innerText.split('\n').forEach(text => {
+            dataArray.push({
+              type: 'TEXT',
+              text: text
+            })
           })
         }
+      }
+      if (node.classList.contains('m-editor-block')) {
+        const img = node.firstChild
+        console.dir(img)
+
+        dataArray.push({
+          type: 'IMAGE',
+          url: img.currentSrc,
+          height: img.naturalHeight,
+          width: img.naturalWidth
+        })
       }
     })
 
@@ -220,6 +259,9 @@ export default class MEditor {
     dataArray.forEach(data => {
       if (data.type === 'TEXT') {
         content += `<p>${data.text}</p>`
+      }
+      if (data.type === 'IMAGE') {
+        content += `<div class="m-editor-block"><img src=${data.url} /></div>`
       }
     })
     this.contentContainer.innerHTML = content
