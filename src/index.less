@@ -1,0 +1,53 @@
+.dls-m-editor{
+  width: 100%;
+  outline: none;
+  .content{
+    border-bottom: 1px solid #d1d1d1;
+    padding: 20px;
+    word-wrap: break-word;
+    line-height: 1.9;
+    outline: none;
+    white-space: pre-wrap;
+    p{
+      min-height: 28px;
+      margin: 0;
+      padding: 0;
+    }
+    .m-editor-block{
+      -webkit-user-modify: read-only;
+      text-align: center;
+      border: 2px solid white;
+      &:hover{
+        border: 2px solid #5f97f7;
+      }
+      &.active{
+        border: 2px solid #5f97f7;
+      }
+    }
+  }
+  .toolbar {
+    border-top: 1px solid #d1d1d1;
+    border-bottom: 1px solid #d1d1d1;
+    padding: 6px 8px;
+    .icon-container{
+      padding: 3px 5px;
+      display: inline-block;
+      height: 18px;
+      border: 1px white solid;
+      &:hover{
+        border: 1px #bcbcbc solid;
+        background: rgb(216, 216, 216);
+      }
+      span{
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        background-size: 100% 100%;
+      }
+    }
+    
+    .dls-image-icon{
+      background: url('http://localhost:3001/staticlib/ckeditor/plugins/dls-image/icons/dls-image.png?t=H8DA') no-repeat ;
+    }
+  }
+}
