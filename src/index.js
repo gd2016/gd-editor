@@ -240,8 +240,6 @@ export default class MEditor {
       }
       if (node.classList.contains('m-editor-block')) {
         const img = node.firstChild
-        console.dir(img)
-
         dataArray.push({
           type: 'IMAGE',
           url: img.currentSrc,
@@ -253,7 +251,12 @@ export default class MEditor {
 
     return dataArray
   }
-
+  innerHTML () {
+    return this.contentContainer.innerHTML
+  }
+  innerText () {
+    return this.contentContainer.innerText
+  }
   setData (dataArray) {
     let content = ''
     dataArray.forEach(data => {
