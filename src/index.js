@@ -15,7 +15,7 @@ export default class MEditor {
       content: '',
       imgHost: '//pic.evatlas.com',
       host: '__ALLHISTORY_HOSTNAME__',
-      url: '/api/m/image/upload/v1',
+      url: '/api/image/upload/v1',
       formName: 'userfile',
       onReady (editor) {}
     }, props)
