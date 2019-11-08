@@ -44,12 +44,12 @@ export default class MEditor {
         const pluginName = this._toCamelCase(plugin.name)
         if (!this[pluginName]) {
           this[pluginName] = new plugin.constructor({ editor: this, host: this.host, imgHost: this.imgHost, url: this.url, formName: this.formName })
-          this.contentContainer.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
+          this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
             this[pluginName].initCommand()
           }
           this[pluginName].init && this[pluginName].init(this.editor)
           if (this[pluginName].label) {
-            this.contentContainer.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
+            this.container.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
           }
         }
       })
