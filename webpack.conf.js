@@ -50,7 +50,7 @@ module.exports = {
     hot: true,
     contentBase: false, // since we use CopyWebpackPlugin.
     compress: true,
-    host: 'localhost',
+    host: '0.0.0.0',
     port: port,
     publicPath: '/',
     proxy: {

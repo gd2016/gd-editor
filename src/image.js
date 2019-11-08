@@ -11,7 +11,6 @@ export default class img {
       name: 'userfile',
       url: '',
       host: '',
-      imgHost: '',
       formName: 'userfile'
     }, props)
   }
@@ -33,8 +32,8 @@ export default class img {
       let formData = new FormData()
       formData.append(this.formName, file)
       Service.saveImage(this.host + this.url, formData).then(res => {
-        if (res.result === 'success') {
-          this.editor.insertHtml(template({ src: `${this.imgHost}/${res.fileName}` }))
+        if (res.code === 200) {
+          this.editor.insertHtml(template({ src: `${res.data.imageUrl}` }))
         } else {
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
