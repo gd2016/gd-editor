@@ -1,6 +1,6 @@
 {
   "name": "@portal/dls-m-editor",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "dls-m-editor",
   "main": "src/index.js",
   "scripts": {
