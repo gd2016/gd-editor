@@ -38,6 +38,10 @@ export default class MEditor {
     this._newPlugins(this.basePlugins)
     this._newPlugins(this.plugins)
   }
+  /**
+   * @function  加载插件
+   * @param  {array}  [{ constructor: imagePlugin, name: 'image' }]
+   */
   _newPlugins (plugins) {
     if (plugins.length) {
       plugins.forEach(plugin => {
@@ -55,6 +59,10 @@ export default class MEditor {
       })
     }
   }
+  /**
+   * @function 主动定位光标
+   * @param  {node} node 节点
+   */
   _setRange (node) {
     const range = document.createRange()
     range.selectNodeContents(node)
@@ -64,10 +72,15 @@ export default class MEditor {
     sel.addRange(range)
     this.selection = sel.getRangeAt(0)
   }
+  /**
+   * @function 插入节点，用于插件
+   * @param  {string} domStr    html字符串
+   * @param  {boolean} isContain 在当前光标标签内插入，还是新建节点
+   */
   insertHtml (domStr, isContain) {
     const objE = document.createElement('div')
     objE.innerHTML = domStr
-    if (!this.selection) {
+    if (!this.selection) { // 没有聚焦时进行的插入操作
       this.contentContainer.prepend(objE.childNodes[0])
       return
     }
@@ -75,16 +88,19 @@ export default class MEditor {
       this.selection.insertNode(objE.childNodes[0])
     } else {
       const rangeNode = this.selection.endContainer
-      if (rangeNode.nodeName === '#text') {
+      if (rangeNode.nodeName === '#text') { // 在文本后进行的插入
         this.contentContainer.insertBefore(objE.childNodes[0], rangeNode.parentNode.nextSibling)
         const empty = document.createElement('p')
         empty.innerHTML = '<br>'
         this.contentContainer.insertBefore(empty, rangeNode.parentNode.nextSibling.nextSibling)
         this._setRange(empty)
       }
-      if (rangeNode.nodeName === 'P') {
+      if (rangeNode.nodeName === 'P') { // 在空行进行的插入
         this.contentContainer.insertBefore(objE.childNodes[0], rangeNode)
         this._setRange(rangeNode)
+      }
+      if (rangeNode === this.contentContainer) { // 空内容按backspace键后的插入
+        this.contentContainer.prepend(objE.childNodes[0])
       }
     }
   }
@@ -131,12 +147,10 @@ export default class MEditor {
    * @function 主要针对backspace做的处理，用于删除图片块的数据
    */
   _keydown (e) {
-    if (this.contentContainer.innerHTML === '') {
-      this.contentContainer.innerHTML = '<p><br></p>'
-    }
     if (e.code === 'Backspace') {
       if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
         this.contentContainer.innerHTML = '<p><br></p>'
+        e.preventDefault()
       }
       if (this.block) { // 删除高亮块
         this.block.parentNode.removeChild(this.block)
@@ -154,7 +168,7 @@ export default class MEditor {
     } else {
       if (this.block) {
         this.block.classList.remove('active')
-        if (!this.block.nextSibling) {
+        if (!this.block.nextSibling) { // 图片后没有空行时，添加一个空行
           const empty = document.createElement('p')
           empty.innerHTML = '<br>'
           this.block.parentNode.insertBefore(empty, this.block.nextSibling)
