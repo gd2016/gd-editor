@@ -1,7 +1,7 @@
 import Service from './service'
 import { Alert } from '@portal/dls-ui'
 const template = (config) => {
-  return `<div class="m-editor-block"><img src=${config.src} /></div>`
+  return `<div class="m-editor-block" ondragstart="return false"><img src=${config.src} /></div>`
 }
 export default class img {
   constructor (props) {

@@ -278,7 +278,7 @@ export default class MEditor {
         content += `<p>${data.text}</p>`
       }
       if (data.type === 'IMAGE') {
-        content += `<div class="m-editor-block"><img src=${data.url} /></div>`
+        content += `<div class="m-editor-block" ondragstart="return false"><img src=${data.url} /></div>`
       }
     })
     this.contentContainer.innerHTML = content
