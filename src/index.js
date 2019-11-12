@@ -265,6 +265,20 @@ export default class MEditor {
 
     return dataArray
   }
+  getLength (onlyText) {
+    let length = 0
+    let dataArray
+    dataArray = this.getData()
+    dataArray.forEach((data) => {
+      if (data.type === 'TEXT') {
+        length += data.text.length
+      }
+      if (data.type === 'IMAGE' && onlyText) {
+        length += 1
+      }
+    })
+    return length
+  }
   innerHTML () {
     return this.contentContainer.innerHTML
   }

@@ -35,7 +35,7 @@ const editor = new test({
 })
 
 document.querySelector('#getData').addEventListener('click', () => {
-  console.log(editor.contentContainer)
+  console.log(editor.contentContainer, editor.getLength(true))
 })
 
 document.querySelector('#setData').addEventListener('click', () => {
