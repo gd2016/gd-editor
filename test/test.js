@@ -26,9 +26,6 @@ const editor = new test({
   },
   toolbar: ['image']
   // plugins: [{
-  //   constructor: imgPlugin,
-  //   name: 'image'
-  // }, {
   //   constructor: imgPlugin2,
   //   name: 'image2'
   // }]

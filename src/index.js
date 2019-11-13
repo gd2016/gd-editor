@@ -217,12 +217,20 @@ export default class MEditor {
     // Get the clipboard data
     let paste = (e.clipboardData || window.clipboardData).getData('text')
     // Do something with paste like remove non-UTF-8 characters
-    paste = paste.replace(/style/gi, '')
+    paste = paste.replace(/\n/gi, '');
+
+    let dom = document.createElement('div');
+    dom.innerHTML = paste;
+    paste = dom.innerText;
     // Find the cursor location or highlighted area
     const selection = window.getSelection()
     // Cancel the paste operation if the cursor or highlighted area isn't found
-    if (!selection.rangeCount) return false
+    if (!selection.rangeCount) return false;
+
+    selection.getRangeAt(0).deleteContents();
+    
     var textNode = document.createTextNode(paste)
+    
     selection.getRangeAt(0).insertNode(textNode)
   }
   _toCamelCase (str) {
