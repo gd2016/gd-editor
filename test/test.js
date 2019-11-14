@@ -7,9 +7,6 @@ const editor = new test({
   }, {
     type: 'TEXT',
     text: '12312cx xc asd     as d'
-  }, {
-    type: 'IMAGE',
-    url: '//pic.evatlas.com/test-image942/7e45dc8d854f4bc0b3b18e72f441b57c'
   }],
   host: 'http://10.4.40.168',
   onReady: (editor) => {
@@ -32,7 +29,7 @@ const editor = new test({
 })
 
 document.querySelector('#getData').addEventListener('click', () => {
-  console.log(editor.contentContainer, editor.getLength(true))
+  console.log(editor.getData())
 })
 
 document.querySelector('#setData').addEventListener('click', () => {

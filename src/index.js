@@ -17,6 +17,8 @@ export default class MEditor {
       host: '__ALLHISTORY_HOSTNAME__',
       url: '/api/image/upload/v1',
       formName: 'userfile',
+
+      dataOutput: [],
       onReady (editor) {}
     }, props)
     this._init()
@@ -84,25 +86,25 @@ export default class MEditor {
       this.contentContainer.prepend(objE.childNodes[0])
       return
     }
-    if (isContain) {
+    // if (isContain) {
       this.selection.insertNode(objE.childNodes[0])
-    } else {
-      const rangeNode = this.selection.endContainer
-      if (rangeNode.nodeName === '#text') { // 在文本后进行的插入
-        this.contentContainer.insertBefore(objE.childNodes[0], rangeNode.parentNode.nextSibling)
-        const empty = document.createElement('p')
-        empty.innerHTML = '<br>'
-        this.contentContainer.insertBefore(empty, rangeNode.parentNode.nextSibling.nextSibling)
-        this._setRange(empty)
-      }
-      if (rangeNode.nodeName === 'P') { // 在空行进行的插入
-        this.contentContainer.insertBefore(objE.childNodes[0], rangeNode)
-        this._setRange(rangeNode)
-      }
-      if (rangeNode === this.contentContainer) { // 空内容按backspace键后的插入
-        this.contentContainer.prepend(objE.childNodes[0])
-      }
-    }
+    // } else {
+    //   const rangeNode = this.selection.endContainer
+    //   if (rangeNode.nodeName === '#text') { // 在文本后进行的插入
+    //     this.contentContainer.insertBefore(objE.childNodes[0], rangeNode.parentNode.nextSibling)
+    //     const empty = document.createElement('p')
+    //     empty.innerHTML = '<br>'
+    //     this.contentContainer.insertBefore(empty, rangeNode.parentNode.nextSibling.nextSibling)
+    //     this._setRange(empty)
+    //   }
+    //   else if (rangeNode.nodeName === 'P' || rangeNode.nodeName === 'DIV') { // 在空行进行的插入
+    //     this.contentContainer.insertBefore(objE.childNodes[0], rangeNode)
+    //     this._setRange(rangeNode)
+    //   }
+    //   if (rangeNode === this.contentContainer) { // 空内容按backspace键后的插入
+    //     this.contentContainer.prepend(objE.childNodes[0])
+    //   }
+    // }
   }
   _initDom () {
     this._initContainer()
@@ -235,43 +237,60 @@ export default class MEditor {
     }
     return arr.join('')
   }
-  getData () {
-    const nodes = this.contentContainer.childNodes
-    const dataArray = []
+
+  getData() {
+    this.dataOutput = [];
+    return this._getData(this.contentContainer.childNodes)
+  }
+
+  /**
+   * FIXME： 待优化，图片节点需可配置
+   * 私有方法，勿外部调用
+   * 递归调用，仅push text 节点、图片节点、和br节点
+   * @param {*} nodes 
+   */
+  _getData (nodes) {
+    if(!nodes || Array.from(nodes).length <= 0) {
+      return [];
+    }
     Array.from(nodes).forEach(node => {
-      if (node.nodeName === '#text' || node.nodeName === 'P') { // 文本
-        if (node.innerHTML === '<br>') {
-          dataArray.push({
-            type: 'TEXT',
-            text: ''
-          })
-        } else {
-          node.innerText.split('\n').forEach(text => {
-            dataArray.push({
-              type: 'TEXT',
-              text: text
-            })
-          })
-        }
-      }
-      if (node.classList.contains('m-editor-block')) {
+      if (node.classList && node.classList.contains('m-editor-block')) {
         const img = node.firstChild
-        dataArray.push({
+        this.dataOutput.push({
           type: 'IMAGE',
           url: img.currentSrc,
           height: img.naturalHeight,
           width: img.naturalWidth
         })
       }
+      else if (node.nodeName === 'P') { // 文本
+        this._getData(node.childNodes);
+      }
+      else if(node.nodeName === 'DIV') {
+        this._getData(node.childNodes);
+      }
+      else if(node.nodeName === '#text') {
+        node.data.trim().split('\n').forEach(text => {
+          this.dataOutput.push({
+            type: 'TEXT',
+            text: text
+          })
+        })
+      }
+      else if(node.nodeName == 'BR') {
+        this.dataOutput.push({
+          type: 'TEXT',
+          text: ''
+        })
+      }
     })
 
-    return dataArray
+    return this.dataOutput;
   }
   getLength (onlyText) {
     let length = 0
-    let dataArray
-    dataArray = this.getData()
-    dataArray.forEach((data) => {
+    this.getData();
+    this.dataOutput.forEach((data) => {
       if (data.type === 'TEXT') {
         length += data.text.length
       }
