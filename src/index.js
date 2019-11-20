@@ -68,7 +68,7 @@ export default class MEditor {
   _setRange (node) {
     const range = document.createRange()
     range.selectNodeContents(node)
-    range.collapse(true)
+    range.collapse(false)
     var sel = window.getSelection()
     sel.removeAllRanges()
     sel.addRange(range)
@@ -77,34 +77,15 @@ export default class MEditor {
   /**
    * @function 插入节点，用于插件
    * @param  {string} domStr    html字符串
-   * @param  {boolean} isContain 在当前光标标签内插入，还是新建节点
    */
-  insertHtml (domStr, isContain) {
+  insertHtml (domStr) {
     const objE = document.createElement('div')
     objE.innerHTML = domStr
     if (!this.selection) { // 没有聚焦时进行的插入操作
-      this.contentContainer.prepend(objE.childNodes[0])
+      this.contentContainer.appendChild(objE.childNodes[0])
       return
     }
-    // if (isContain) {
-      this.selection.insertNode(objE.childNodes[0])
-    // } else {
-    //   const rangeNode = this.selection.endContainer
-    //   if (rangeNode.nodeName === '#text') { // 在文本后进行的插入
-    //     this.contentContainer.insertBefore(objE.childNodes[0], rangeNode.parentNode.nextSibling)
-    //     const empty = document.createElement('p')
-    //     empty.innerHTML = '<br>'
-    //     this.contentContainer.insertBefore(empty, rangeNode.parentNode.nextSibling.nextSibling)
-    //     this._setRange(empty)
-    //   }
-    //   else if (rangeNode.nodeName === 'P' || rangeNode.nodeName === 'DIV') { // 在空行进行的插入
-    //     this.contentContainer.insertBefore(objE.childNodes[0], rangeNode)
-    //     this._setRange(rangeNode)
-    //   }
-    //   if (rangeNode === this.contentContainer) { // 空内容按backspace键后的插入
-    //     this.contentContainer.prepend(objE.childNodes[0])
-    //   }
-    // }
+    this.selection.insertNode(objE.childNodes[0])
   }
   _initDom () {
     this._initContainer()
@@ -155,12 +136,13 @@ export default class MEditor {
         e.preventDefault()
       }
       if (this.block) { // 删除高亮块
+        this.block.previousSibling && this._setRange(this.block.previousSibling)
         this.block.parentNode.removeChild(this.block)
         this.block = null
         return e.preventDefault()
       }
       if (this.selection.endContainer.nodeName === 'P' && this.selection.endContainer.innerHTML === '<br>') { // 空内容时，按键后选中一个块
-        const preDom = this.selection.endContainer.previousSibling
+        const preDom = this.selection.endContainer.previousElementSibling
         if (preDom && preDom.classList.contains('m-editor-block')) {
           this.block = preDom
           this.block.classList.add('active')
@@ -170,10 +152,11 @@ export default class MEditor {
     } else {
       if (this.block) {
         this.block.classList.remove('active')
-        if (!this.block.nextSibling) { // 图片后没有空行时，添加一个空行
+        if (!this.block.nextElementSibling) { // 图片后没有空行时，添加一个空行
           const empty = document.createElement('p')
           empty.innerHTML = '<br>'
-          this.block.parentNode.insertBefore(empty, this.block.nextSibling)
+          this.block.parentNode.appendChild(empty)
+          // this.block.parentNode.insertBefore(empty, this.block.nextSibling)
           this._setRange(empty)
         }
         this.block = null
@@ -215,19 +198,21 @@ export default class MEditor {
   _bindPaste (e) {
     // Prevent the default pasting event and stop bubbling
     e.preventDefault()
-    e.stopPropagation()
+    // e.stopPropagation()
     // Get the clipboard data
     let paste = (e.clipboardData || window.clipboardData).getData('text')
 
     const selection = window.getSelection()
     // Cancel the paste operation if the cursor or highlighted area isn't found
-    if (!selection.rangeCount) return false;
+    if (!selection.rangeCount) return false
 
-    selection.getRangeAt(0).deleteContents();
-    
+    selection.getRangeAt(0).deleteContents()
+
     var textNode = document.createTextNode(paste)
-    
+
     selection.getRangeAt(0).insertNode(textNode)
+
+    this._setRange(textNode)
   }
   _toCamelCase (str) {
     str = str.toLowerCase()
@@ -238,8 +223,8 @@ export default class MEditor {
     return arr.join('')
   }
 
-  getData() {
-    this.dataOutput = [];
+  getData () {
+    this.dataOutput = []
     return this._getData(this.contentContainer.childNodes)
   }
 
@@ -247,11 +232,11 @@ export default class MEditor {
    * FIXME： 待优化，图片节点需可配置
    * 私有方法，勿外部调用
    * 递归调用，仅push text 节点、图片节点、和br节点
-   * @param {*} nodes 
+   * @param {*} nodes
    */
   _getData (nodes) {
-    if(!nodes || Array.from(nodes).length <= 0) {
-      return [];
+    if (!nodes || Array.from(nodes).length <= 0) {
+      return []
     }
     Array.from(nodes).forEach(node => {
       if (node.classList && node.classList.contains('m-editor-block')) {
@@ -262,22 +247,18 @@ export default class MEditor {
           height: img.naturalHeight,
           width: img.naturalWidth
         })
-      }
-      else if (node.nodeName === 'P') { // 文本
-        this._getData(node.childNodes);
-      }
-      else if(node.nodeName === 'DIV') {
-        this._getData(node.childNodes);
-      }
-      else if(node.nodeName === '#text') {
+      } else if (node.nodeName === 'P') { // 文本
+        this._getData(node.childNodes)
+      } else if (node.nodeName === 'DIV') {
+        this._getData(node.childNodes)
+      } else if (node.nodeName === '#text') {
         node.data.trim().split('\n').forEach(text => {
           this.dataOutput.push({
             type: 'TEXT',
             text: text
           })
         })
-      }
-      else if(node.nodeName == 'BR') {
+      } else if (node.nodeName == 'BR') {
         this.dataOutput.push({
           type: 'TEXT',
           text: ''
@@ -285,11 +266,11 @@ export default class MEditor {
       }
     })
 
-    return this.dataOutput;
+    return this.dataOutput
   }
   getLength (onlyText) {
     let length = 0
-    this.getData();
+    this.getData()
     this.dataOutput.forEach((data) => {
       if (data.type === 'TEXT') {
         length += data.text.length
