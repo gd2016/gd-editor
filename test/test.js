@@ -1,13 +1,13 @@
 import test from '../src/index'
 const editor = new test({
   container: document.querySelector('#editor-area'),
-  content: [{
-    type: 'TEXT',
-    text: '12312'
-  }, {
-    type: 'TEXT',
-    text: '12312cx xc asd     as d'
-  }],
+  // content: [{
+  //   type: 'TEXT',
+  //   text: '12312'
+  // }, {
+  //   type: 'TEXT',
+  //   text: '12312cx xc asd     as d'
+  // }],
   host: 'http://10.4.40.168',
   onReady: (editor) => {
     // editor.setData([{

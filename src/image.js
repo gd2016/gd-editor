@@ -15,8 +15,7 @@ export default class img {
     }, props)
   }
   initCommand () {
-    // this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
-    // return;
+    // return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
     const file = document.createElement('input')
     const self = this
     file.name = this.name

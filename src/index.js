@@ -10,6 +10,15 @@ export default class MEditor {
         constructor: imagePlugin,
         name: 'image'
       }],
+      imgOutput (node) {
+        const img = node.firstChild
+        return {
+          type: 'IMAGE',
+          url: img.currentSrc,
+          height: img.naturalHeight,
+          width: img.naturalWidth
+        }
+      },
       minHeight: 200,
       maxHeight: 400000,
       content: '',
@@ -42,7 +51,7 @@ export default class MEditor {
   }
   /**
    * @function  加载插件
-   * @param  {array}  [{ constructor: imagePlugin, name: 'image' }]
+   * @param  {array}  [{ constructor: imagePlugin, name: 'image',output(node){} }]
    */
   _newPlugins (plugins) {
     if (plugins.length) {
@@ -156,7 +165,6 @@ export default class MEditor {
           const empty = document.createElement('p')
           empty.innerHTML = '<br>'
           this.block.parentNode.appendChild(empty)
-          // this.block.parentNode.insertBefore(empty, this.block.nextSibling)
           this._setRange(empty)
         }
         this.block = null
@@ -209,9 +217,11 @@ export default class MEditor {
     selection.getRangeAt(0).deleteContents()
 
     var textNode = document.createTextNode(paste)
-
+    textNode.data = textNode.data.trim()
     selection.getRangeAt(0).insertNode(textNode)
-
+    if (textNode.nextSibling && textNode.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
+      textNode.nextSibling.parentNode.removeChild(textNode.nextSibling)
+    }
     this._setRange(textNode)
   }
   _toCamelCase (str) {
@@ -240,19 +250,14 @@ export default class MEditor {
     }
     Array.from(nodes).forEach(node => {
       if (node.classList && node.classList.contains('m-editor-block')) {
-        const img = node.firstChild
-        this.dataOutput.push({
-          type: 'IMAGE',
-          url: img.currentSrc,
-          height: img.naturalHeight,
-          width: img.naturalWidth
-        })
+        this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
       } else if (node.nodeName === 'P') { // 文本
         this._getData(node.childNodes)
       } else if (node.nodeName === 'DIV') {
         this._getData(node.childNodes)
       } else if (node.nodeName === '#text') {
-        node.data.trim().split('\n').forEach(text => {
+        // node.data.trim().split('\n').forEach(text => {
+        node.data.split('\n').forEach(text => {
           this.dataOutput.push({
             type: 'TEXT',
             text: text
@@ -264,6 +269,9 @@ export default class MEditor {
           text: ''
         })
       }
+      this.plugins.concat(this.basePlugins).forEach(plugin => {
+        plugin.output && plugin.output(node) && this.dataOutput.push(plugin.output(node))
+      })
     })
 
     return this.dataOutput
