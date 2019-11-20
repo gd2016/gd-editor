@@ -140,24 +140,19 @@ export default class MEditor {
    */
   _keydown (e) {
     if (e.code === 'Backspace') {
+      console.log(this.selection)
       if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
         this.contentContainer.innerHTML = '<p><br></p>'
         e.preventDefault()
       }
       if (this.block) { // 删除高亮块
-        this.block.previousSibling && this._setRange(this.block.previousSibling)
-        this.block.parentNode.removeChild(this.block)
+        let parentNode = this.block.parentNode
+        let afterDelete = parentNode.innerHTML.replace(this.block.outerHTML, '')
+        parentNode.innerHTML = afterDelete
         this.block = null
         return e.preventDefault()
       }
-      if (this.selection.endContainer.nodeName === 'P' && this.selection.endContainer.innerHTML === '<br>') { // 空内容时，按键后选中一个块
-        const preDom = this.selection.endContainer.previousElementSibling
-        if (preDom && preDom.classList.contains('m-editor-block')) {
-          this.block = preDom
-          this.block.classList.add('active')
-          e.preventDefault()
-        }
-      }
+      this._selectBlock(e)
     } else {
       if (this.block) {
         this.block.classList.remove('active')
@@ -178,6 +173,14 @@ export default class MEditor {
     const selection = window.getSelection()
     if (selection.type !== 'None') {
       this.selection = selection.getRangeAt(0)
+    }
+  }
+  _selectBlock (e) {
+    const preDom = this.selection.endContainer.previousElementSibling
+    if (preDom && preDom.classList.contains('m-editor-block')) {
+      this.block = preDom
+      this.block.classList.add('active')
+      e.preventDefault()
     }
   }
   /**
@@ -251,10 +254,6 @@ export default class MEditor {
     Array.from(nodes).forEach(node => {
       if (node.classList && node.classList.contains('m-editor-block')) {
         this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
-      } else if (node.nodeName === 'P') { // 文本
-        this._getData(node.childNodes)
-      } else if (node.nodeName === 'DIV') {
-        this._getData(node.childNodes)
       } else if (node.nodeName === '#text') {
         // node.data.trim().split('\n').forEach(text => {
         node.data.split('\n').forEach(text => {
@@ -268,6 +267,8 @@ export default class MEditor {
           type: 'TEXT',
           text: ''
         })
+      } else {
+        this._getData(node.childNodes)
       }
       this.plugins.concat(this.basePlugins).forEach(plugin => {
         plugin.output && plugin.output(node) && this.dataOutput.push(plugin.output(node))
