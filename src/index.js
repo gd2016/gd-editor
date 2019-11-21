@@ -270,9 +270,9 @@ export default class MEditor {
       } else {
         this._getData(node.childNodes)
       }
-      this.plugins.concat(this.basePlugins).forEach(plugin => {
-        plugin.output && plugin.output(node) && this.dataOutput.push(plugin.output(node))
-      })
+      // this.plugins.concat(this.basePlugins).forEach(plugin => {
+      //   plugin.output && plugin.output(node) && this.dataOutput.push(plugin.output(node))
+      // })
     })
 
     return this.dataOutput
