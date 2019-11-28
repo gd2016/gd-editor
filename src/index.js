@@ -146,9 +146,10 @@ export default class MEditor {
       }
       if (this.block) { // 删除高亮块
         let parentNode = this.block.parentNode
+        this.block.previousSibling && this._setRange(this.block.previousSibling)
         let afterDelete = parentNode.innerHTML.replace(this.block.outerHTML, '')
         parentNode.innerHTML = afterDelete
-        this.block.previousSibling && this._setRange(this.block.previousSibling)
+
         this.block = null
         return e.preventDefault()
       }
@@ -187,7 +188,7 @@ export default class MEditor {
       this.block = preDom
       this.block.classList.add('active')
       e.preventDefault()
-    } else if (this.selection.endContainer.children.length > 1) {
+    } else if (this.selection.endContainer.children && this.selection.endContainer.children.length > 1) {
       const node = this.selection.endContainer.children
       const br = node[node.length - 1]
       const block = node[node.length - 2]
