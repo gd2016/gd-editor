@@ -1,5 +1,6 @@
 import test from '../src/index'
 const editor = new test({
+  maxHeight: 350,
   container: document.querySelector('#editor-area'),
   // content: [{
   //   type: 'TEXT',
@@ -29,7 +30,17 @@ const editor = new test({
 })
 
 document.querySelector('#getData').addEventListener('click', () => {
+  let str = ''
+  editor.getData().forEach(item => {
+    if (item.type === 'TEXT') {
+      str += item.text + '<hr/>'
+    } else {
+      str += item.url + '<hr/>'
+    }
+  })
   console.log(editor.getData())
+
+  document.querySelector('.content').innerHTML = str
 })
 
 document.querySelector('#setData').addEventListener('click', () => {

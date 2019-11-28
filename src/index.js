@@ -140,7 +140,6 @@ export default class MEditor {
    */
   _keydown (e) {
     if (e.code === 'Backspace') {
-      console.log(this.selection)
       if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
         this.contentContainer.innerHTML = '<p><br></p>'
         e.preventDefault()
@@ -149,16 +148,23 @@ export default class MEditor {
         let parentNode = this.block.parentNode
         let afterDelete = parentNode.innerHTML.replace(this.block.outerHTML, '')
         parentNode.innerHTML = afterDelete
+        this.block.previousSibling && this._setRange(this.block.previousSibling)
         this.block = null
         return e.preventDefault()
       }
-      this._selectBlock(e)
+
+      if (this.selection.endContainer.nodeName !== '#text') {
+        this._selectBlock(e)
+      } else {
+        if (this.selection.endOffset === 0) {
+          this._selectBlock(e)
+        }
+      }
     } else {
       if (this.block) {
         this.block.classList.remove('active')
         if (!this.block.nextElementSibling) { // 图片后没有空行时，添加一个空行
-          const empty = document.createElement('p')
-          empty.innerHTML = '<br>'
+          const empty = document.createElement('br')
           this.block.parentNode.appendChild(empty)
           this._setRange(empty)
         }
@@ -176,11 +182,21 @@ export default class MEditor {
     }
   }
   _selectBlock (e) {
-    const preDom = this.selection.endContainer.previousElementSibling
-    if (preDom && preDom.classList.contains('m-editor-block')) {
+    const preDom = this.selection.endContainer.previousSibling
+    if (preDom && preDom.classList && preDom.classList.contains('m-editor-block')) {
       this.block = preDom
       this.block.classList.add('active')
       e.preventDefault()
+    } else if (this.selection.endContainer.children.length > 1) {
+      const node = this.selection.endContainer.children
+      const br = node[node.length - 1]
+      const block = node[node.length - 2]
+      br.parentNode.removeChild(br)
+      if (block.classList.contains('m-editor-block')) {
+        this.block = block
+        this.block.classList.add('active')
+        e.preventDefault()
+      }
     }
   }
   /**
@@ -219,9 +235,11 @@ export default class MEditor {
 
     selection.getRangeAt(0).deleteContents()
 
-    var textNode = document.createTextNode(paste)
+    let textNode = document.createTextNode(paste)
     textNode.data = textNode.data.trim()
-    selection.getRangeAt(0).insertNode(textNode)
+    let P = document.createElement('p')
+    P.appendChild(textNode)
+    selection.getRangeAt(0).insertNode(P)
     if (textNode.nextSibling && textNode.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
       textNode.nextSibling.parentNode.removeChild(textNode.nextSibling)
     }
@@ -255,13 +273,15 @@ export default class MEditor {
       if (node.classList && node.classList.contains('m-editor-block')) {
         this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
       } else if (node.nodeName === '#text') {
+        console.dir(node)
+
         // node.data.trim().split('\n').forEach(text => {
-        node.data.split('\n').forEach(text => {
-          this.dataOutput.push({
-            type: 'TEXT',
-            text: text
-          })
+        // node.data.split('\n').forEach(text => {
+        node.data && this.dataOutput.push({
+          type: 'TEXT',
+          text: node.data
         })
+        // })
       } else if (node.nodeName == 'BR') {
         this.dataOutput.push({
           type: 'TEXT',
