@@ -215,6 +215,7 @@ export default class MEditor {
       if (target.classList.contains('m-editor-block')) {
         this.block = target
         this.block.classList.add('active')
+        this._setRange(this.block.parentNode)
         return
       }
       target = target.parentNode
@@ -274,8 +275,6 @@ export default class MEditor {
       if (node.classList && node.classList.contains('m-editor-block')) {
         this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
       } else if (node.nodeName === '#text') {
-        console.dir(node)
-
         // node.data.trim().split('\n').forEach(text => {
         // node.data.split('\n').forEach(text => {
         node.data && this.dataOutput.push({
