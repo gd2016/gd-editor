@@ -11,12 +11,11 @@ export default class MEditor {
         name: 'image'
       }],
       imgOutput (node) {
-        const img = node.firstChild
         return {
           type: 'IMAGE',
-          url: img.currentSrc,
-          height: img.naturalHeight,
-          width: img.naturalWidth
+          url: node.currentSrc,
+          height: node.naturalHeight,
+          width: node.naturalWidth
         }
       },
       minHeight: 200,
@@ -215,7 +214,7 @@ export default class MEditor {
       if (target.classList.contains('m-editor-block')) {
         this.block = target
         this.block.classList.add('active')
-        this._setRange(this.block.parentNode)
+        this._setRange(this.block)
         return
       }
       target = target.parentNode
@@ -272,7 +271,7 @@ export default class MEditor {
       return []
     }
     Array.from(nodes).forEach(node => {
-      if (node.classList && node.classList.contains('m-editor-block')) {
+      if (node.nodeName === 'IMG') {
         this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
       } else if (node.nodeName === '#text') {
         // node.data.trim().split('\n').forEach(text => {
