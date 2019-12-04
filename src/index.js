@@ -1,14 +1,18 @@
 import './index.less'
 import imagePlugin from './image'
+import boldPlugin from './bold'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image'],
+      toolbar: ['image', 'bold'],
       plugins: [],
       basePlugins: [{
         constructor: imagePlugin,
         name: 'image'
+      }, {
+        constructor: boldPlugin,
+        name: 'bold'
       }],
       imgOutput (node) {
         return {
@@ -35,8 +39,8 @@ export default class MEditor {
   _init () {
     this._initDom()
     this._initContent()
-    this._initPlugins()
     this._bind()
+    this._initPlugins()
     this.onReady(this)
   }
 
@@ -89,11 +93,13 @@ export default class MEditor {
   insertHtml (domStr) {
     const objE = document.createElement('div')
     objE.innerHTML = domStr
+    const node = objE.childNodes[0]
     if (!this.selection) { // 没有聚焦时进行的插入操作
-      this.contentContainer.appendChild(objE.childNodes[0])
+      this.contentContainer.appendChild(node)
       return
     }
-    this.selection.insertNode(objE.childNodes[0])
+    this.selection.insertNode(node)
+    this._setRange(node.nextSibling || this.contentContainer)
   }
   _initDom () {
     this._initContainer()
@@ -109,7 +115,7 @@ export default class MEditor {
     this.box.appendChild(this.toolbarDom)
     let iconStr = ''
     this.toolbar.forEach(element => {
-      iconStr += `<a class='icon-container dls-${element}-icon-container'><span class='dls-${element}-icon'></span></a>`
+      iconStr += `<a onmousedown="event.preventDefault();" class='icon-container dls-${element}-icon-container'><span class='dls-${element}-icon'></span></a>`
     })
     this.toolbarDom.innerHTML = iconStr
   }
@@ -274,13 +280,15 @@ export default class MEditor {
       if (node.nodeName === 'IMG') {
         this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
       } else if (node.nodeName === '#text') {
-        // node.data.trim().split('\n').forEach(text => {
-        // node.data.split('\n').forEach(text => {
+        let style = 'CONTENT'
+        if (node.parentNode.classList.contains('bold')) {
+          style = 'HEADER'
+        }
         node.data && this.dataOutput.push({
           type: 'TEXT',
-          text: node.data
+          text: node.data,
+          style
         })
-        // })
       } else if (node.nodeName == 'BR') {
         this.dataOutput.push({
           type: 'TEXT',
@@ -289,9 +297,6 @@ export default class MEditor {
       } else {
         this._getData(node.childNodes)
       }
-      // this.plugins.concat(this.basePlugins).forEach(plugin => {
-      //   plugin.output && plugin.output(node) && this.dataOutput.push(plugin.output(node))
-      // })
     })
 
     return this.dataOutput
@@ -326,5 +331,13 @@ export default class MEditor {
       }
     })
     this.contentContainer.innerHTML = content
+  }
+  insertAfter (newElement, targetElement) {
+    var parent = targetElement.parentNode
+    if (parent.lastChild == targetElement) {
+      parent.appendChild(newElement)
+    } else {
+      parent.insertBefore(newElement, targetElement.nextSibling)
+    }
   }
 }

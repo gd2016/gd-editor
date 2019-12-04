@@ -21,8 +21,7 @@ const editor = new test({
     //   type: 'TEXT',
     //   text: '12312cx xc asd     as d'
     // }])
-  },
-  toolbar: ['image']
+  }
   // plugins: [{
   //   constructor: imgPlugin2,
   //   name: 'image2'
@@ -33,7 +32,11 @@ document.querySelector('#getData').addEventListener('click', () => {
   let str = ''
   editor.getData().forEach(item => {
     if (item.type === 'TEXT') {
-      str += item.text + '<hr/>'
+      if (item.style === 'HEADER') {
+        str += `<b>${item.text}</b><hr/>`
+      } else {
+        str += `${item.text}<hr/>`
+      }
     } else {
       str += item.url + '<hr/>'
     }

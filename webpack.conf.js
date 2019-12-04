@@ -1,7 +1,7 @@
 'use strict'
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-// const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 // const I18nPlugin = require('@ah/i18n/src/plugins/webpack')
 const port = 8080
 module.exports = {
@@ -65,12 +65,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'CTIME TEST',
       template: 'test/test.html'
-    })
-    // new CopyWebpackPlugin([{
-    //   from: path.resolve('./staticlib'),
-    //   to: 'staticlib',
-    //   ignore: ['.*']
-    // }]),
+    }),
+    new CopyWebpackPlugin([{
+      from: path.resolve('./static'),
+      to: 'static',
+      ignore: ['.*']
+    }])
     // new I18nPlugin({
     //   output: path.join(__dirname, './src/i18n/output'),
     //   type: 'js',

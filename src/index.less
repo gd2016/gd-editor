@@ -10,10 +10,16 @@
     white-space: pre-wrap;
     overflow: auto;
     font-family: auto; //修复回车带span标签bug
+    .bold{
+      font-weight: bold;
+      font-size: 18px;
+    }
     p{
       min-height: 28px;
       margin: 0;
       padding: 0;
+      font-weight: normal;
+      font-size: 14px;
     }
     .m-editor-block{
       -webkit-user-modify: read-only;
@@ -46,6 +52,10 @@
       border: 1px white solid;
       box-sizing: initial;
       &:hover{
+        border: 1px #bcbcbc solid;
+        background: rgb(216, 216, 216);
+      }
+      &.active{
         border: 1px #bcbcbc solid;
         background: rgb(216, 216, 216);
       }
