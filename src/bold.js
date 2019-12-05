@@ -11,7 +11,32 @@ export default class Bold {
     this.editor.contentContainer.addEventListener('keydown', this._updateToolStatus.bind(this))
     this.editor.contentContainer.addEventListener('keyup', this._handleKeyUp.bind(this))
   }
+  replaceSelection () {
+    var selecter = window.getSelection()
+    var selectStr = selecter.toString()
+    if (selectStr.trim != '') {
+      var rang = selecter.getRangeAt(0)
+      const p = document.createElement('p')
+      p.innerHTML = selectStr
+      if (rang.endContainer.nodeName === '#text') {
+        if (rang.endContainer.parentNode.classList.contains('bold')) {
+          p.classList.remove('bold')
+          rang.surroundContents(p)
+          this.editor._setRange(p)
+          this._updateTool(false)
+        } else {
+          p.classList.add('bold')
+          rang.surroundContents(p)
+          this.editor._setRange(p)
+          this._updateTool(true)
+        }
+      }
+    }
+  }
   initCommand () {
+    if (!window.getSelection().isCollapsed) {
+      return this.replaceSelection()
+    }
     const selectNode = this.editor.selection && this.editor.selection.endContainer
     if (!selectNode) return
     this.onoff = !this._updateToolStatus()
