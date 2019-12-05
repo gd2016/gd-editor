@@ -60,7 +60,7 @@ export default class MEditor {
     if (plugins.length) {
       plugins.forEach(plugin => {
         const pluginName = this._toCamelCase(plugin.name)
-        if (!this[pluginName]) {
+        if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
           this[pluginName] = new plugin.constructor({ editor: this, host: this.host, imgHost: this.imgHost, url: this.url, formName: this.formName })
           this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
             this[pluginName].initCommand()

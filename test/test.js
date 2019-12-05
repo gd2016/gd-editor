@@ -2,6 +2,7 @@ import test from '../src/index'
 const editor = new test({
   maxHeight: 350,
   container: document.querySelector('#editor-area'),
+  toolbar: ['image', 'bold'],
   // content: [{
   //   type: 'TEXT',
   //   text: '12312'
