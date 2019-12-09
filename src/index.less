@@ -25,6 +25,12 @@
       -webkit-user-modify: read-only;
       text-align: left;
       width: 100%;
+      &.loading{
+        min-width: 200px;
+        min-height: 200px;
+        background-repeat: no-repeat;
+        background-position: 0;
+      }
       &.active>img{
         border: 2px solid #5f97f7;
       }
@@ -65,6 +71,15 @@
         display: inline-block;
         background-size: 100% 100%;
       }
+    }
+  }
+  
+  @keyframes rotating {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(1turn);
     }
   }
 }

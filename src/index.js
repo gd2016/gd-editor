@@ -1,6 +1,7 @@
 import './index.less'
 import imagePlugin from './image'
 import boldPlugin from './bold'
+import xss from 'xss'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
@@ -96,10 +97,16 @@ export default class MEditor {
     const node = objE.childNodes[0]
     if (!this.selection) { // 没有聚焦时进行的插入操作
       this.contentContainer.appendChild(node)
-      return
+      return node
     }
-    this.selection.insertNode(node)
-    this._setRange(node.nextSibling || this.contentContainer)
+    if (this.selection.endContainer.nodeName === 'BR') {
+      const selection = this.selection.endContainer
+      selection.parentNode.replaceChild(node, selection)
+    } else {
+      this.selection.insertNode(node)
+      this._setRange(node.nextSibling || this.contentContainer)
+    }
+    return node
   }
   _initDom () {
     this._initContainer()
@@ -196,11 +203,13 @@ export default class MEditor {
     } else if (this.selection.endContainer.children && this.selection.endContainer.children.length > 1) {
       const node = this.selection.endContainer.children
       const br = node[node.length - 1]
-      const block = node[node.length - 2]
-      br.parentNode.removeChild(br)
-      if (block.classList.contains('m-editor-block')) {
-        this.block = block
-        this.block.classList.add('active')
+      if (br.nodeName === 'BR') {
+        br.parentNode.removeChild(br)
+        if (node[0].classList.contains('m-editor-block')) {
+          this.block = node[0]
+          this.block.classList.add('active')
+        }
+        this._setRange(node[0])
         e.preventDefault()
       }
     }
@@ -216,7 +225,16 @@ export default class MEditor {
     }
     let target = e.target
     while (target) {
-      if (target === this.contentContainer) return
+      if (target === this.contentContainer) {
+        // 如果最后一个节点是图片，增加一个空行
+        if (this._getlastImg(this.contentContainer)) {
+          const p = document.createElement('p')
+          p.innerHTML = '<br>'
+          this.contentContainer.appendChild(p)
+          this._setRange(p)
+        }
+        return
+      }
       if (target.classList.contains('m-editor-block')) {
         this.block = target
         this.block.classList.add('active')
@@ -227,30 +245,62 @@ export default class MEditor {
     }
   }
   /**
+   * @function 判断最后一个节点是否为图片
+   */
+  _getlastImg (node) {
+    if (!node) return false
+    if (node.classList && node.classList.contains('m-editor-block')) {
+      return true
+    }
+    if (node.nodeName === '#text' && node.nodeValue === '') {
+      return true
+    }
+    return this._getlastImg(node.lastChild)
+  }
+  /**
    * @function 只允许粘贴纯文本
    */
   _bindPaste (e) {
-    // Prevent the default pasting event and stop bubbling
     e.preventDefault()
-    // e.stopPropagation()
-    // Get the clipboard data
-    let paste = (e.clipboardData || window.clipboardData).getData('text')
-
+    const html = e.clipboardData.getData('text/html')
     const selection = window.getSelection()
-    // Cancel the paste operation if the cursor or highlighted area isn't found
-    if (!selection.rangeCount) return false
+    let P
+    var imgStr = xss(html, {
+      whiteList: {
+        img: ['src']
+      }, // 白名单为空，表示过滤所有标签
+      stripIgnoreTag: true, // 过滤所有非白名单标签的HTML
+      stripIgnoreTagBody: ['script'], // script标签较特殊，需要过滤标签中间的内容
+      onTag (tag, html, options) {
+        if (tag === 'img') {
+          const objE = document.createElement('div')
+          objE.innerHTML = html
+          return `<div class="m-editor-block" ondragstart="return false"><img src=${objE.childNodes[0].src} /></div>`
+        }
+      }
+    })
+    if (imgStr.indexOf('<img') !== -1) {
+      P = document.createElement('p')
+      P.innerHTML = imgStr
+      selection.getRangeAt(0).insertNode(P)
+      this._setRange(P)
+    } else {
+      let paste = (e.clipboardData || window.clipboardData).getData('text')
 
-    selection.getRangeAt(0).deleteContents()
+      // Cancel the paste operation if the cursor or highlighted area isn't found
+      if (!selection.rangeCount) return false
+      selection.getRangeAt(0).deleteContents()
 
-    let textNode = document.createTextNode(paste)
-    textNode.data = textNode.data.trim()
-    let P = document.createElement('p')
-    P.appendChild(textNode)
-    selection.getRangeAt(0).insertNode(P)
-    if (textNode.nextSibling && textNode.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
-      textNode.nextSibling.parentNode.removeChild(textNode.nextSibling)
+      let textNode = document.createTextNode(paste)
+      textNode.data = textNode.data.trim()
+      P = document.createElement('p')
+      P.appendChild(textNode)
+      selection.getRangeAt(0).insertNode(P)
+      if (textNode.nextSibling && textNode.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
+        textNode.nextSibling.parentNode.removeChild(textNode.nextSibling)
+      }
+      this._setRange(textNode)
     }
-    this._setRange(textNode)
   }
   _toCamelCase (str) {
     str = str.toLowerCase()
@@ -289,7 +339,7 @@ export default class MEditor {
           text: node.data,
           style
         })
-      } else if (node.nodeName == 'BR') {
+      } else if (node.nodeName == 'BR' || (node.nodeName == 'P' && node.innerHTML === '')) {
         this.dataOutput.push({
           type: 'TEXT',
           text: ''
