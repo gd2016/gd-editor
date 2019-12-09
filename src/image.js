@@ -80,6 +80,9 @@ export default class img {
           img.onload = () => {
             this['node' + index].classList.remove('loading')
           }
+          img.onerror = () => {
+            this['node' + index].classList.remove('loading')
+          }
         } else {
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }

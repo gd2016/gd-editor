@@ -195,10 +195,12 @@ export default class MEditor {
     }
   }
   _selectBlock (e) {
+    const node = this.selection.endContainer
     const preDom = this.selection.endContainer.previousSibling
     if (preDom && preDom.classList && preDom.classList.contains('m-editor-block')) {
       this.block = preDom
       this.block.classList.add('active')
+      node.parentNode.removeChild(node)
       e.preventDefault()
     } else if (this.selection.endContainer.children && this.selection.endContainer.children.length > 1) {
       const node = this.selection.endContainer.children
@@ -212,6 +214,10 @@ export default class MEditor {
         this._setRange(node[0])
         e.preventDefault()
       }
+    } else if (node.innerHTML === '<br>' && this._getlastImg(preDom)) {
+      node.parentNode.removeChild(node)
+      e.preventDefault()
+    } else {
     }
   }
   /**
