@@ -8,6 +8,7 @@ export default class MEditor {
       container: null,
       toolbar: ['image', 'bold'],
       plugins: [],
+      maxlength: 0,
       basePlugins: [{
         constructor: imagePlugin,
         name: 'image'
@@ -112,6 +113,7 @@ export default class MEditor {
     this._initContainer()
     this._initToolbar()
     this._initContentDom()
+    this._initLength()
   }
   /**
    * @function 初始化toolbar
@@ -126,7 +128,13 @@ export default class MEditor {
     })
     this.toolbarDom.innerHTML = iconStr
   }
-
+  _initLength () {
+    if (this.maxlength) {
+      const p = document.createElement('p')
+      p.innerHTML = `字数限制：${this.maxlength}`
+      this.box.appendChild(p)
+    }
+  }
   _initContainer () {
     this.box = document.createElement('div')
     this.box.classList.add('dls-m-editor')
