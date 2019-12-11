@@ -210,7 +210,7 @@ export default class MEditor {
     if (preDom && preDom.classList && preDom.classList.contains('m-editor-block')) {
       this.block = preDom
       this.block.classList.add('active')
-      node.parentNode.removeChild(node)
+      if (node.nodeName === 'BR') node.parentNode.removeChild(node)
       e.preventDefault()
     } else if (this.selection.endContainer.children && this.selection.endContainer.children.length > 1) {
       const node = this.selection.endContainer.children
