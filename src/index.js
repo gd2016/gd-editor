@@ -160,6 +160,8 @@ export default class MEditor {
    */
   _keydown (e) {
     if (e.code === 'Backspace') {
+      console.log(this.selection)
+      // return e.preventDefault()
       if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
         this.contentContainer.innerHTML = '<p><br></p>'
         e.preventDefault()
@@ -224,6 +226,12 @@ export default class MEditor {
       }
     } else if (node.innerHTML === '<br>' && this._getlastImg(preDom)) {
       node.parentNode.removeChild(node)
+      const block = this._getlastImg(preDom)
+      if (block && block.classList && block.classList.contains('m-editor-block')) {
+        this.block = block
+        block.classList.add('active')
+      }
+
       e.preventDefault()
     } else {
     }
@@ -255,7 +263,11 @@ export default class MEditor {
         this._setRange(this.block)
         return
       }
-      target = target.parentNode
+      if (target.nodeName === 'IMG') {
+        target = target.parentNode
+      } else {
+        return
+      }
     }
   }
   /**
@@ -264,10 +276,16 @@ export default class MEditor {
   _getlastImg (node) {
     if (!node) return false
     if (node.classList && node.classList.contains('m-editor-block')) {
-      return true
+      return node
     }
     if (node.nodeName === '#text' && node.nodeValue === '') {
+      if (node.previousSibling && node.previousSibling.lastChild) {
+        return this._getlastImg(node.previousSibling.lastChild)
+      }
       return true
+    }
+    if (node.nodeName === 'IMG') {
+      return node.parentNode
     }
     return this._getlastImg(node.lastChild)
   }
@@ -298,6 +316,9 @@ export default class MEditor {
       P.innerHTML = imgStr.trim()
       selection.getRangeAt(0).insertNode(P)
       this._setRange(P)
+      if (P.nextSibling && P.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
+        P.nextSibling.parentNode.removeChild(P.nextSibling)
+      }
     } else {
       let paste = (e.clipboardData || window.clipboardData).getData('text')
 

@@ -55,7 +55,7 @@ export default class img {
     //   console.log(myFile)
     //   this._upload([myFile])
     // })
-    // return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
+    return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
     const file = document.createElement('input')
     const self = this
     file.name = this.name
@@ -84,6 +84,7 @@ export default class img {
             this['node' + index].classList.remove('loading')
           }
         } else {
+          this['node' + index].classList.remove('loading')
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
       })
