@@ -295,7 +295,7 @@ export default class MEditor {
     })
     if (imgStr.indexOf('<img') !== -1) {
       P = document.createElement('p')
-      P.innerHTML = imgStr
+      P.innerHTML = imgStr.trim()
       selection.getRangeAt(0).insertNode(P)
       this._setRange(P)
     } else {
