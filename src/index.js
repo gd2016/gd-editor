@@ -217,11 +217,11 @@ export default class MEditor {
       const br = node[node.length - 1]
       if (br.nodeName === 'BR') {
         br.parentNode.removeChild(br)
-        if (node[0].classList.contains('m-editor-block')) {
-          this.block = node[0]
+        if (node[node.length - 1].classList.contains('m-editor-block')) {
+          this.block = node[node.length - 1]
           this.block.classList.add('active')
         }
-        this._setRange(node[0])
+        this._setRange(node[node.length - 1])
         e.preventDefault()
       }
     } else if (node.innerHTML === '<br>' && this._getlastImg(preDom)) {
