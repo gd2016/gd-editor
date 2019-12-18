@@ -8,6 +8,7 @@ export default class MEditor {
       container: null,
       toolbar: ['image', 'bold'],
       plugins: [],
+      id: 0,
       maxlength: 0,
       basePlugins: [{
         constructor: imagePlugin,
@@ -36,6 +37,7 @@ export default class MEditor {
       onReady (editor) {}
     }, props)
     this._init()
+    console.log(this)
   }
 
   _init () {
@@ -297,6 +299,8 @@ export default class MEditor {
     const html = e.clipboardData.getData('text/html')
     const selection = window.getSelection()
     let P
+    const imgArr = []
+    const self = this
     var imgStr = xss(html, {
       whiteList: {
         img: ['src']
@@ -307,7 +311,13 @@ export default class MEditor {
         if (tag === 'img') {
           const objE = document.createElement('div')
           objE.innerHTML = html
-          return `<div class="m-editor-block" ondragstart="return false"><img src=${objE.childNodes[0].src} /></div>`
+          const src = objE.childNodes[0].src
+          if (src.indexOf('img.allhistory.com') !== -1) {
+            return `<div class="m-editor-block" ondragstart="return false"><img src=${src} /></div>`
+          } else {
+            imgArr.push(src)
+            return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /></div>`
+          }
         }
       }
     })
@@ -319,6 +329,8 @@ export default class MEditor {
       if (P.nextSibling && P.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
         P.nextSibling.parentNode.removeChild(P.nextSibling)
       }
+      this.image.replaceImg(imgArr, this.id)
+      this.id++
     } else {
       let paste = (e.clipboardData || window.clipboardData).getData('text')
 
