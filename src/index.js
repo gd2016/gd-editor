@@ -319,7 +319,7 @@ export default class MEditor {
             return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /></div>`
           }
         } else {
-          const blockTag = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'li', 'dl', 'dt', 'dd']
+          const blockTag = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd']
           if (blockTag.indexOf(tag) !== -1) {
             return '\n'
           }
