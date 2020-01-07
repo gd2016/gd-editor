@@ -1,7 +1,7 @@
 import Service from './service'
 import { Alert } from '@portal/dls-ui'
 const template = (config) => {
-  const img = config.src ? `<img src=${config.src} />` : ''
+  const img = config.src ? `<img src=${config.src} /><p class="dls-image-capture" contenteditable="true"></p>` : ''
   return `<div class="m-editor-block loading" ondragstart="return false">${img}</div>`
 }
 export default class img {
@@ -14,6 +14,9 @@ export default class img {
       host: '',
       formName: 'userfile'
     }, props)
+  }
+  init () {
+    this.editor.contentContainer.addEventListener('keydown', this._handleKeyDown.bind(this))
   }
   _getImgToBase64 (url, callback) {
     var canvas = document.createElement('canvas')
@@ -51,7 +54,7 @@ export default class img {
     // return new Blob([u8arr],{type:mime});
   }
   initCommand () {
-    // return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
+    return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
     const file = document.createElement('input')
     const self = this
     file.name = this.name
@@ -123,5 +126,11 @@ export default class img {
         this.replaceImg(urlArr, id)
       })
     })
+  }
+
+  _handleKeyDown (e) {
+    if (e.code === 'Enter' && e.target.className === 'dls-image-capture') {
+      e.preventDefault()
+    }
   }
 }

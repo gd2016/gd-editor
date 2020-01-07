@@ -10,9 +10,25 @@
     white-space: pre-wrap;
     overflow: auto;
     font-family: auto; //修复回车带span标签bug
-    .bold{
+    .h1,.h2{
       font-weight: bold;
       font-size: 18px;
+    }
+    .h1{
+      font-size: 20px;
+    }
+    .refer{
+      border-left: 4px solid #ccc;
+      padding-left: 10px;
+    }
+    ul{
+      margin: 0;
+    }
+    .ul{
+      font-weight: normal;
+    }
+    ol{
+      margin: 0;
     }
     p{
       min-height: 28px;
@@ -25,22 +41,33 @@
       -webkit-user-modify: read-only;
       text-align: left;
       width: 100%;
+      border: 2px solid transparent;
+      text-align: center;
+      .dls-image-capture{
+        outline: none;
+        border-top: 2px solid transparent;
+      }
       &.loading{
         min-width: 200px;
         min-height: 200px;
         background-repeat: no-repeat;
         background-position: 0;
       }
-      &.active>img{
+      &.active{
+        border: 2px solid #ace;
+      }
+      &:hover{
+        .dls-image-capture{
+          border-top: 2px solid #5f97f7;
+        }
         border: 2px solid #5f97f7;
       }
       img{
         max-width: 320px;
         cursor: pointer;
         border: 2px solid white;
-        &:hover{
-          border: 2px solid #5f97f7;
-        }
+        display: block;
+        margin: 0 auto;
       }
     }
   }

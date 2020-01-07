@@ -1,21 +1,48 @@
 import './index.less'
 import imagePlugin from './image'
-import boldPlugin from './bold'
+import stylePlugin from './style'
+import ulPlugin from './ul'
 import xss from 'xss'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'bold'],
+      toolbar: ['image', 'h1', 'h2', 'refer', 'ul', 'ol'],
       plugins: [],
-      id: 0,
-      maxlength: 0,
+      id: 0, // 粘贴图片时的id标识
+      maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       basePlugins: [{
         constructor: imagePlugin,
         name: 'image'
       }, {
-        constructor: boldPlugin,
-        name: 'bold'
+        constructor: stylePlugin,
+        name: 'h1',
+        config: {
+          type: 'h1',
+          label: '1级标题'
+        }
+      }, {
+        constructor: stylePlugin,
+        name: 'h2',
+        config: {
+          type: 'h2',
+          label: '2级标题'
+        }
+      }, {
+        constructor: ulPlugin,
+        name: 'ol',
+        label: '无序列表'
+      }, {
+        constructor: ulPlugin,
+        name: 'ul',
+        label: '有序列表'
+      }, {
+        constructor: stylePlugin,
+        name: 'refer',
+        config: {
+          type: 'refer',
+          label: '插入引用'
+        }
       }],
       imgOutput (node) {
         return {
@@ -28,16 +55,13 @@ export default class MEditor {
       minHeight: 200,
       maxHeight: 400000,
       content: '',
-      imgHost: '//pic.evatlas.com',
       host: '__ALLHISTORY_HOSTNAME__',
       url: '/api/image/upload/v1',
       formName: 'userfile',
-
       dataOutput: [],
       onReady (editor) {}
     }, props)
     this._init()
-    console.log(this)
   }
 
   _init () {
@@ -65,7 +89,8 @@ export default class MEditor {
       plugins.forEach(plugin => {
         const pluginName = this._toCamelCase(plugin.name)
         if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
-          this[pluginName] = new plugin.constructor({ editor: this, host: this.host, imgHost: this.imgHost, url: this.url, formName: this.formName })
+          // plugin.type && plugin.constructor.setType(plugin.type)
+          this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, url: this.url, formName: this.formName, ...plugin.config })
           this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
             this[pluginName].initCommand()
           }
@@ -157,18 +182,64 @@ export default class MEditor {
     this.contentContainer.addEventListener('keyup', this._getSelection.bind(this))
     this.contentContainer.addEventListener('click', this._click.bind(this))
   }
+  updateToolbarStatus (type) {
+    const selectNode = this.selection && this.selection.endContainer
+    if (!selectNode) return
+    if (selectNode.nodeName === '#text') {
+      const className = selectNode.parentNode.className
+      if (!type) {
+        if (className) {
+          return this.updateTool(true, selectNode.parentNode)
+        } else {
+          return this.updateTool(false, selectNode.parentNode)
+        }
+      } else {
+        if (selectNode.parentNode.classList.contains(type)) {
+          return this.updateTool(true, selectNode.parentNode)
+        } else {
+          return this.updateTool(false, selectNode.parentNode)
+        }
+      }
+    } else if (selectNode.nodeName === 'P') {
+      const className = selectNode.className
+      if (!type) {
+        if (className) {
+          return this.updateTool(true, selectNode)
+        } else {
+          return this.updateTool(false, selectNode)
+        }
+      } else {
+        if (selectNode.classList.contains(type)) {
+          return this.updateTool(true, selectNode)
+        } else {
+          return this.updateTool(false, selectNode)
+        }
+      }
+    }
+  }
+  updateTool (bool, node) {
+    const icons = this.toolbarDom.querySelectorAll('.icon-container')
+    const className = node.className
+    Array.from(icons).forEach(icon => {
+      icon.classList.remove('active')
+    })
+    if (!this.toolbarDom.querySelector(`.dls-${className}-icon-container`)) return bool
+    bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.add('active')
+    !bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.remove('active')
+    return bool
+  }
   /**
    * @function 主要针对backspace做的处理，用于删除图片块的数据
    */
   _keydown (e) {
     if (e.code === 'Backspace') {
-      console.log(this.selection)
+      // console.log(this.selection)
       // return e.preventDefault()
       if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
         this.contentContainer.innerHTML = '<p><br></p>'
         e.preventDefault()
       }
-      if (this.block) { // 删除高亮块
+      if (this.block) { // 删除高亮块(没有使用removeChild是因为在文本中间插入图片再删除，文本节点会中断)
         let parentNode = this.block.parentNode
         this.block.previousSibling && this._setRange(this.block.previousSibling)
         let afterDelete = parentNode.innerHTML.replace(this.block.outerHTML, '')
@@ -181,7 +252,7 @@ export default class MEditor {
       if (this.selection.endContainer.nodeName !== '#text') {
         this._selectBlock(e)
       } else {
-        if (this.selection.endOffset === 0) {
+        if (this.selection.endOffset === 0) { // 在文本首位
           this._selectBlock(e)
         }
       }
@@ -196,14 +267,26 @@ export default class MEditor {
         this.block = null
       }
     }
+    this.updateToolbarStatus()
   }
   /**
    * @function 获取selection
    */
-  _getSelection () {
+  _getSelection (e) {
     const selection = window.getSelection()
     if (selection.type !== 'None') {
       this.selection = selection.getRangeAt(0)
+    }
+    if (e && e.code === 'Backspace') {
+      const span = this.contentContainer.querySelector('span')
+      if (!span) return
+      const parentNode = span.parentNode
+      let afterDelete = parentNode.innerHTML.replace(span.outerHTML, span.innerHTML)
+      parentNode.innerHTML = afterDelete
+    }
+    if (e && e.code === 'Enter' && this.selection.endContainer.nodeName === 'DIV') {
+      const p = document.createElement('p')
+      this.selection.endContainer.parentNode.replaceChild(p, this.selection.endContainer)
     }
   }
   _selectBlock (e) {
@@ -243,6 +326,7 @@ export default class MEditor {
    */
   _click (e) {
     this._getSelection()
+    this.updateToolbarStatus()
     if (this.block) {
       this.block.classList.remove('active')
       this.block = null
@@ -277,7 +361,7 @@ export default class MEditor {
    */
   _getlastImg (node) {
     if (!node) return false
-    if (node.classList && node.classList.contains('m-editor-block')) {
+    if (node.classList && node.classList.contains('dls-image-capture')) {
       return node
     }
     if (node.nodeName === '#text' && node.nodeValue === '') {
@@ -292,7 +376,7 @@ export default class MEditor {
     return this._getlastImg(node.lastChild)
   }
   /**
-   * @function 只允许粘贴纯文本
+   * @function 只允许粘贴纯文本及图片，其他域图片会上传到allhistory
    */
   _bindPaste (e) {
     e.preventDefault()
@@ -338,7 +422,6 @@ export default class MEditor {
       this.id++
     } else {
       let paste = (e.clipboardData || window.clipboardData).getData('text')
-
       // Cancel the paste operation if the cursor or highlighted area isn't found
       if (!selection.rangeCount) return false
       selection.getRangeAt(0).deleteContents()
@@ -381,6 +464,13 @@ export default class MEditor {
     Array.from(nodes).forEach(node => {
       if (node.nodeName === 'IMG') {
         this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
+      } else if (node.nodeName === 'P' && node.classList.contains('dls-image-capture')) {
+        if (!node.innerText) return
+        this.dataOutput.push({
+          type: 'TEXT',
+          text: node.innerText,
+          style: 'CAPTURE'
+        })
       } else if (node.nodeName === '#text') {
         let style = 'CONTENT'
         if (node.parentNode.classList.contains('bold')) {
