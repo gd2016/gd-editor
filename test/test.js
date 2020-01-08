@@ -23,23 +23,27 @@ const editor = new test({
     //   text: '12312cx xc asd     as d'
     // }])
   }
-  // plugins: [{
-  //   constructor: imgPlugin2,
-  //   name: 'image2'
-  // }]
 })
 
 document.querySelector('#getData').addEventListener('click', () => {
   let str = ''
   editor.getData().forEach(item => {
     if (item.type === 'TEXT') {
-      if (item.style === 'HEADER') {
-        str += `<b>${item.text}</b><hr/>`
+      if (item.style === 'HEADER' || item.style === 'H1') {
+        str += `<h1>${item.text}</h1><hr/>`
+      } else if (item.style === 'H2') {
+        str += `<h2>${item.text}</h2><hr/>`
+      } else if (item.style === 'OL') {
+        str += `${item.index}<p>${item.text}</p><hr/>`
+      } else if (item.style === 'UL') {
+        str += `<p>~${item.text}</p><hr/>`
+      } else if (item.style === 'REFER') {
+        str += `<p>refer：${item.text}</p><hr/>`
       } else {
-        str += `${item.text}<hr/>`
+        str += `<p>${item.text}</p><hr/>`
       }
     } else {
-      str += item.url + '<hr/>'
+      str += item.url + 'capture:' + item.text + '<hr/>'
     }
   })
   console.log(editor.getData())

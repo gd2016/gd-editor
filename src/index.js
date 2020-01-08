@@ -13,13 +13,35 @@ export default class MEditor {
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       basePlugins: [{
         constructor: imagePlugin,
-        name: 'image'
+        name: 'image',
+        output: (node) => {
+          if (node.classList.contains('m-editor-block')) {
+            const img = node.querySelector('img')
+            const txt = node.querySelector('.dls-image-capture')
+            return {
+              type: 'IMAGE',
+              url: img.currentSrc,
+              height: img.naturalHeight,
+              width: img.naturalWidth,
+              text: txt.innerText
+            }
+          }
+        }
       }, {
         constructor: stylePlugin,
         name: 'h1',
         config: {
           type: 'h1',
           label: '1级标题'
+        },
+        output: (node) => {
+          if (node.classList.contains('h1')) {
+            return {
+              style: 'H1',
+              text: node.innerText,
+              type: 'TEXT'
+            }
+          }
         }
       }, {
         constructor: stylePlugin,
@@ -27,21 +49,63 @@ export default class MEditor {
         config: {
           type: 'h2',
           label: '2级标题'
+        },
+        output: (node) => {
+          if (node.classList.contains('h2')) {
+            return {
+              style: 'H2',
+              text: node.innerText,
+              type: 'TEXT'
+            }
+          }
         }
       }, {
         constructor: ulPlugin,
         name: 'ol',
-        label: '无序列表'
+        label: '有序列表',
+        output: (node) => {
+          if (node.classList.contains('ol')) {
+            const ol = node.parentNode
+            const li = ol.querySelectorAll('.ol')
+            return {
+              style: 'OL',
+              text: node.innerText,
+              index: Array.from(li).findIndex(li => li === node),
+              type: 'TEXT'
+            }
+          }
+        }
       }, {
         constructor: ulPlugin,
         name: 'ul',
-        label: '有序列表'
+        label: '无序列表',
+        output: (node) => {
+          if (node.classList.contains('ul')) {
+            const ul = node.parentNode
+            const li = ul.querySelectorAll('.ul')
+            return {
+              style: 'UL',
+              text: node.innerText,
+              index: Array.from(li).findIndex(li => li === node),
+              type: 'TEXT'
+            }
+          }
+        }
       }, {
         constructor: stylePlugin,
         name: 'refer',
         config: {
           type: 'refer',
           label: '插入引用'
+        },
+        output: (node) => {
+          if (node.classList.contains('refer')) {
+            return {
+              style: 'REFER',
+              text: node.innerText,
+              type: 'TEXT'
+            }
+          }
         }
       }],
       imgOutput (node) {
@@ -182,8 +246,26 @@ export default class MEditor {
     this.contentContainer.addEventListener('keyup', this._getSelection.bind(this))
     this.contentContainer.addEventListener('click', this._click.bind(this))
   }
+  getNode (node) {
+    if (node.nodeName === '#text') return node.parentNode
+    return node
+  }
+  getParents (node, className) {
+    while (!this.getNode(node).classList.contains('dls-m-editor-content')) {
+      if (this.getNode(node).classList.contains(className)) {
+        return true
+      }
+      node = node.parentNode
+    }
+    return false
+  }
   updateToolbarStatus (type) {
     const selectNode = this.selection && this.selection.endContainer
+    if (this.getParents(selectNode, 'dls-image-capture')) {
+      this.toolbarDom.classList.add('disable')
+    } else {
+      this.toolbarDom.classList.remove('disable')
+    }
     if (!selectNode) return
     if (selectNode.nodeName === '#text') {
       const className = selectNode.parentNode.className
@@ -235,7 +317,7 @@ export default class MEditor {
     if (e.code === 'Backspace') {
       // console.log(this.selection)
       // return e.preventDefault()
-      if (this.contentContainer.innerHTML === '<p><br></p>') { // 必须保留一个p标签
+      if (this.contentContainer.innerHTML === '<p><br></p>' || this.contentContainer.innerHTML === '') { // 必须保留一个p标签
         this.contentContainer.innerHTML = '<p><br></p>'
         e.preventDefault()
       }
@@ -286,6 +368,7 @@ export default class MEditor {
     }
     if (e && e.code === 'Enter' && this.selection.endContainer.nodeName === 'DIV') {
       const p = document.createElement('p')
+      p.innerHTML = '<br>'
       this.selection.endContainer.parentNode.replaceChild(p, this.selection.endContainer)
     }
   }
@@ -380,6 +463,11 @@ export default class MEditor {
    */
   _bindPaste (e) {
     e.preventDefault()
+    if (this.selection.endContainer.parentNode.classList.contains('dls-image-capture')) {
+      let txt = e.clipboardData.getData('text')
+      let textNode = document.createTextNode(txt)
+      return this.selection.insertNode(textNode)
+    }
     const html = e.clipboardData.getData('text/html')
     const selection = window.getSelection()
     let P
@@ -397,10 +485,10 @@ export default class MEditor {
           objE.innerHTML = html
           const src = objE.childNodes[0].src
           if (src.indexOf('img.allhistory.com') !== -1) {
-            return `<div class="m-editor-block" ondragstart="return false"><img src=${src} /></div>`
+            return `<div class="m-editor-block" ondragstart="return false"><img src=${src} /><p class="dls-image-capture" contenteditable="true"></p></div>`
           } else {
             imgArr.push(src)
-            return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /></div>`
+            return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /><p class="dls-image-capture" contenteditable="true"></p></div>`
           }
         } else {
           const blockTag = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd']
@@ -410,6 +498,7 @@ export default class MEditor {
         }
       }
     })
+
     if (imgStr.indexOf('<img') !== -1) {
       P = document.createElement('p')
       P.innerHTML = imgStr.trim()
@@ -462,30 +551,83 @@ export default class MEditor {
       return []
     }
     Array.from(nodes).forEach(node => {
-      if (node.nodeName === 'IMG') {
-        this.imgOutput(node) && this.dataOutput.push(this.imgOutput(node))
-      } else if (node.nodeName === 'P' && node.classList.contains('dls-image-capture')) {
-        if (!node.innerText) return
+      // if (node.nodeName === '#text') {
+      //   node.data && this.dataOutput.push({
+      //     type: 'TEXT',
+      //     text: node.data,
+      //     style: 'CONTENT'
+      //   })
+      // } else if (node.nodeName == 'BR' || (node.nodeName == 'P' && node.innerHTML === '')) {
+      //   this.dataOutput.push({
+      //     type: 'TEXT',
+      //     text: ''
+      //   })
+      // } else {
+      //   let flag = false
+      //   this.basePlugins.forEach(plugin => {
+      //     if (plugin.output(node)) {
+      //       flag = true
+      //       this.dataOutput.push(plugin.output(node))
+      //     }
+      //   })
+      //   if (!flag) {
+      //     this._getData(node.childNodes)
+      //   }
+      // }
+
+      if (node.classList && node.classList.contains('m-editor-block')) {
+        const img = node.querySelector('img')
+        const txt = node.querySelector('.dls-image-capture')
         this.dataOutput.push({
-          type: 'TEXT',
-          text: node.innerText,
-          style: 'CAPTURE'
+          type: 'IMAGE',
+          url: img.currentSrc,
+          height: img.naturalHeight,
+          width: img.naturalWidth,
+          text: txt.innerText
         })
       } else if (node.nodeName === '#text') {
-        let style = 'CONTENT'
-        if (node.parentNode.classList.contains('bold')) {
-          style = 'HEADER'
+        let className = node.parentNode.className
+        const map = {
+          h1: 'H1',
+          h2: 'H2',
+          refer: 'REFER',
+          ul: 'UL',
+          ol: 'OL'
         }
-        node.data && this.dataOutput.push({
-          type: 'TEXT',
-          text: node.data,
-          style
-        })
+        const style = map[className] || 'CONTENT'
+        if (style === 'UL' || style === 'OL') {
+          const ul = node.parentNode.parentNode
+          const li = ul.querySelectorAll('.ul')
+          node.data && this.dataOutput.push({
+            style,
+            text: node.data,
+            index: Array.from(li).findIndex(li => li === node.parentNode),
+            type: 'TEXT'
+          })
+        } else {
+          node.data && this.dataOutput.push({
+            type: 'TEXT',
+            text: node.data,
+            style
+          })
+        }
       } else if (node.nodeName == 'BR' || (node.nodeName == 'P' && node.innerHTML === '')) {
-        this.dataOutput.push({
-          type: 'TEXT',
-          text: ''
-        })
+        let className = node.parentNode.className
+        if (className === 'ul' || className === 'ol') {
+          const ul = node.parentNode.parentNode
+          const li = ul.querySelectorAll('.ul')
+          this.dataOutput.push({
+            style: className.toUpperCase(),
+            text: '',
+            index: Array.from(li).findIndex(li => li === node.parentNode),
+            type: 'TEXT'
+          })
+        } else {
+          this.dataOutput.push({
+            type: 'TEXT',
+            text: ''
+          })
+        }
       } else {
         this._getData(node.childNodes)
       }

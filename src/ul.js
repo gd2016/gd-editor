@@ -27,6 +27,7 @@ export default class List {
   }
   initCommand () {
     const selectNode = this.editor.selection && this.editor.selection.endContainer
+
     let isStyle
     if (selectNode.nodeName === '#text') {
       isStyle = selectNode.parentNode.className
@@ -58,6 +59,7 @@ export default class List {
       if (selectNode.nodeName === '#text') {
         selectStr = selectNode.data
       }
+      if (selectNode.nodeName === 'P' && selectNode.children.length > 1) return // 列表内容为空时点击回车 再点击列表bug
       if (selectNode.nodeName === 'P') {
         selectStr = selectNode.innerText
       }
