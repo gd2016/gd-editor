@@ -20,15 +20,19 @@
     .refer{
       border-left: 4px solid #ccc;
       padding-left: 10px;
+      color: #6D6D6D;
+      background: #F7F8FB;
     }
-    ul{
+    ul,ol{
       margin: 0;
+      padding-left: 20px;
+    }
+    .ol{
+      list-style: decimal;
     }
     .ul{
+      list-style: initial;
       font-weight: normal;
-    }
-    ol{
-      margin: 0;
     }
     p{
       min-height: 28px;
@@ -47,6 +51,8 @@
         outline: none;
         border-top: 2px solid transparent;
         white-space: nowrap;
+        color: #A9A9A9;
+        font-size: 12px;
       }
       &.loading{
         min-width: 200px;

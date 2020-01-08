@@ -1,8 +1,8 @@
 import Service from './service'
 import { Alert } from '@portal/dls-ui'
 const template = (config) => {
-  const img = config.src ? `<img src=${config.src} /><p class="dls-image-capture" contenteditable="true"></p>` : ''
-  return `<div class="m-editor-block loading" ondragstart="return false">${img}</div>`
+  const img = config.src ? `<img src=${config.src} />` : ''
+  return `<div class="m-editor-block loading" ondragstart="return false">${img}<p class="dls-image-capture" contenteditable="true"></p></div>`
 }
 export default class img {
   constructor (props) {
@@ -54,7 +54,7 @@ export default class img {
     // return new Blob([u8arr],{type:mime});
   }
   initCommand () {
-    return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
+    // return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
     const file = document.createElement('input')
     const self = this
     file.name = this.name
@@ -75,7 +75,7 @@ export default class img {
         if (res.code === 200) {
           const img = document.createElement('img')
           img.src = res.data.imageUrl
-          this['node' + index].appendChild(img)
+          this['node' + index].prepend(img)
           img.onload = () => {
             this['node' + index].classList.remove('loading')
           }

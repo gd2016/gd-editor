@@ -595,13 +595,13 @@ export default class MEditor {
           ol: 'OL'
         }
         const style = map[className] || 'CONTENT'
-        if (style === 'UL' || style === 'OL') {
+        if (style === 'OL') {
           const ul = node.parentNode.parentNode
-          const li = ul.querySelectorAll('.ul')
+          const li = ul.querySelectorAll(`.${style.toLowerCase()}`)
           node.data && this.dataOutput.push({
             style,
             text: node.data,
-            index: Array.from(li).findIndex(li => li === node.parentNode),
+            index: Array.from(li).findIndex(li => li === node.parentNode) + 1,
             type: 'TEXT'
           })
         } else {
@@ -615,11 +615,11 @@ export default class MEditor {
         let className = node.parentNode.className
         if (className === 'ul' || className === 'ol') {
           const ul = node.parentNode.parentNode
-          const li = ul.querySelectorAll('.ul')
+          const li = ul.querySelectorAll(`.${className}`)
           this.dataOutput.push({
             style: className.toUpperCase(),
             text: '',
-            index: Array.from(li).findIndex(li => li === node.parentNode),
+            index: className === 'ol' && Array.from(li).findIndex(li => li === node.parentNode) + 1,
             type: 'TEXT'
           })
         } else {
