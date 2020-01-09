@@ -34,7 +34,7 @@ document.querySelector('#getData').addEventListener('click', () => {
       } else if (item.style === 'H2') {
         str += `<h2>${item.text}</h2><hr/>`
       } else if (item.style === 'OL') {
-        str += `${item.index}<p>${item.text}</p><hr/>`
+        str += `<p>${item.index}:${item.text}</p><hr/>`
       } else if (item.style === 'UL') {
         str += `<p>~${item.text}</p><hr/>`
       } else if (item.style === 'REFER') {

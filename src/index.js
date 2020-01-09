@@ -1,47 +1,26 @@
 import './index.less'
 import imagePlugin from './image'
 import stylePlugin from './style'
-import ulPlugin from './ul'
+// import ulPlugin from './ul'
+import ulPlugin from './list'
 import xss from 'xss'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'h1', 'h2', 'refer', 'ul', 'ol'],
+      toolbar: ['image', 'h1', 'h2', 'refer', 'ol', 'ul'],
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       basePlugins: [{
         constructor: imagePlugin,
-        name: 'image',
-        output: (node) => {
-          if (node.classList.contains('m-editor-block')) {
-            const img = node.querySelector('img')
-            const txt = node.querySelector('.dls-image-capture')
-            return {
-              type: 'IMAGE',
-              url: img.currentSrc,
-              height: img.naturalHeight,
-              width: img.naturalWidth,
-              text: txt.innerText
-            }
-          }
-        }
+        name: 'image'
       }, {
         constructor: stylePlugin,
         name: 'h1',
         config: {
           type: 'h1',
           label: '1级标题'
-        },
-        output: (node) => {
-          if (node.classList.contains('h1')) {
-            return {
-              style: 'H1',
-              text: node.innerText,
-              type: 'TEXT'
-            }
-          }
         }
       }, {
         constructor: stylePlugin,
@@ -49,47 +28,19 @@ export default class MEditor {
         config: {
           type: 'h2',
           label: '2级标题'
-        },
-        output: (node) => {
-          if (node.classList.contains('h2')) {
-            return {
-              style: 'H2',
-              text: node.innerText,
-              type: 'TEXT'
-            }
-          }
         }
       }, {
         constructor: ulPlugin,
         name: 'ol',
-        label: '有序列表',
-        output: (node) => {
-          if (node.classList.contains('ol')) {
-            const ol = node.parentNode
-            const li = ol.querySelectorAll('.ol')
-            return {
-              style: 'OL',
-              text: node.innerText,
-              index: Array.from(li).findIndex(li => li === node),
-              type: 'TEXT'
-            }
-          }
+        config: {
+          label: '有序列表'
         }
+
       }, {
         constructor: ulPlugin,
         name: 'ul',
-        label: '无序列表',
-        output: (node) => {
-          if (node.classList.contains('ul')) {
-            const ul = node.parentNode
-            const li = ul.querySelectorAll('.ul')
-            return {
-              style: 'UL',
-              text: node.innerText,
-              index: Array.from(li).findIndex(li => li === node),
-              type: 'TEXT'
-            }
-          }
+        config: {
+          label: '无序列表'
         }
       }, {
         constructor: stylePlugin,
@@ -97,25 +48,8 @@ export default class MEditor {
         config: {
           type: 'refer',
           label: '插入引用'
-        },
-        output: (node) => {
-          if (node.classList.contains('refer')) {
-            return {
-              style: 'REFER',
-              text: node.innerText,
-              type: 'TEXT'
-            }
-          }
         }
       }],
-      imgOutput (node) {
-        return {
-          type: 'IMAGE',
-          url: node.currentSrc,
-          height: node.naturalHeight,
-          width: node.naturalWidth
-        }
-      },
       minHeight: 200,
       maxHeight: 400000,
       content: '',
@@ -243,7 +177,7 @@ export default class MEditor {
   _bind () {
     this.contentContainer.addEventListener('paste', this._bindPaste.bind(this))
     this.contentContainer.addEventListener('keydown', this._keydown.bind(this))
-    this.contentContainer.addEventListener('keyup', this._getSelection.bind(this))
+    this.contentContainer.addEventListener('keyup', this._keyup.bind(this))
     this.contentContainer.addEventListener('click', this._click.bind(this))
   }
   getNode (node) {
@@ -262,46 +196,47 @@ export default class MEditor {
   updateToolbarStatus (type) {
     const selectNode = this.selection && this.selection.endContainer
     if (this.getParents(selectNode, 'dls-image-capture')) {
-      this.toolbarDom.classList.add('disable')
+      return this.toolbarDom.classList.add('disable')
     } else {
       this.toolbarDom.classList.remove('disable')
     }
     if (!selectNode) return
+    let className; let isContain; let node = selectNode
     if (selectNode.nodeName === '#text') {
-      const className = selectNode.parentNode.className
-      if (!type) {
-        if (className) {
-          return this.updateTool(true, selectNode.parentNode)
-        } else {
-          return this.updateTool(false, selectNode.parentNode)
-        }
-      } else {
-        if (selectNode.parentNode.classList.contains(type)) {
-          return this.updateTool(true, selectNode.parentNode)
-        } else {
-          return this.updateTool(false, selectNode.parentNode)
-        }
+      className = selectNode.parentNode.className
+      isContain = selectNode.parentNode.classList.contains(type)
+      node = selectNode.parentNode
+      if (selectNode.parentNode.nodeName === 'LI') {
+        className = 'li'
+        node = selectNode.parentNode.parentNode
       }
     } else if (selectNode.nodeName === 'P') {
-      const className = selectNode.className
-      if (!type) {
-        if (className) {
-          return this.updateTool(true, selectNode)
-        } else {
-          return this.updateTool(false, selectNode)
-        }
+      className = selectNode.className
+      isContain = selectNode.classList.contains(type)
+    } else if (selectNode.nodeName === 'LI') {
+      className = 'li'
+      node = selectNode.parentNode
+    }
+    if (!type) {
+      if (className) {
+        return this.updateTool(true, node)
       } else {
-        if (selectNode.classList.contains(type)) {
-          return this.updateTool(true, selectNode)
-        } else {
-          return this.updateTool(false, selectNode)
-        }
+        return this.updateTool(false, node)
+      }
+    } else {
+      if (isContain) {
+        return this.updateTool(true, node)
+      } else {
+        return this.updateTool(false, node)
       }
     }
   }
   updateTool (bool, node) {
     const icons = this.toolbarDom.querySelectorAll('.icon-container')
-    const className = node.className
+    let className = node.className
+    if (node.nodeName === 'OL' || node.nodeName === 'UL') {
+      className = node.nodeName.toLowerCase()
+    }
     Array.from(icons).forEach(icon => {
       icon.classList.remove('active')
     })
@@ -317,10 +252,6 @@ export default class MEditor {
     if (e.code === 'Backspace') {
       // console.log(this.selection)
       // return e.preventDefault()
-      if (this.contentContainer.innerHTML === '<p><br></p>' || this.contentContainer.innerHTML === '') { // 必须保留一个p标签
-        this.contentContainer.innerHTML = '<p><br></p>'
-        e.preventDefault()
-      }
       if (this.block) { // 删除高亮块(没有使用removeChild是因为在文本中间插入图片再删除，文本节点会中断)
         let parentNode = this.block.parentNode
         this.block.previousSibling && this._setRange(this.block.previousSibling)
@@ -339,6 +270,13 @@ export default class MEditor {
         }
       }
     } else {
+      if (e && e.code === 'Enter') {
+        const node = this.selection.endContainer
+        if (node.innerHTML === '<br>' && node.className && node.nodeName === 'P') {
+          node.classList.remove(node.className)
+          e.preventDefault()
+        }
+      }
       if (this.block) {
         this.block.classList.remove('active')
         if (!this.block.nextElementSibling) { // 图片后没有空行时，添加一个空行
@@ -349,7 +287,6 @@ export default class MEditor {
         this.block = null
       }
     }
-    this.updateToolbarStatus()
   }
   /**
    * @function 获取selection
@@ -359,18 +296,30 @@ export default class MEditor {
     if (selection.type !== 'None') {
       this.selection = selection.getRangeAt(0)
     }
+  }
+  _keyup (e) {
+    this._getSelection()
     if (e && e.code === 'Backspace') {
+      if (this.contentContainer.innerHTML === '<p><br></p>' || this.contentContainer.innerHTML === '') { // 必须保留一个p标签
+        this.contentContainer.innerHTML = '<p><br></p>'
+        return e.preventDefault()
+      }
       const span = this.contentContainer.querySelector('span')
-      if (!span) return
-      const parentNode = span.parentNode
-      let afterDelete = parentNode.innerHTML.replace(span.outerHTML, span.innerHTML)
-      parentNode.innerHTML = afterDelete
+      if (span) {
+        const parentNode = span.parentNode
+        let afterDelete = parentNode.innerHTML.replace(span.outerHTML, span.innerHTML)
+        parentNode.innerHTML = afterDelete
+      }
     }
-    if (e && e.code === 'Enter' && this.selection.endContainer.nodeName === 'DIV') {
+
+    const node = this.selection.endContainer
+    if (node.nodeName === 'DIV' && node !== this.contentContainer) {
       const p = document.createElement('p')
       p.innerHTML = '<br>'
-      this.selection.endContainer.parentNode.replaceChild(p, this.selection.endContainer)
+      node.parentNode.replaceChild(p, node)
+      this._setRange(p)
     }
+    this.updateToolbarStatus()
   }
   _selectBlock (e) {
     const node = this.selection.endContainer
@@ -586,18 +535,26 @@ export default class MEditor {
           text: txt.innerText
         })
       } else if (node.nodeName === '#text') {
-        let className = node.parentNode.className
-        const map = {
-          h1: 'H1',
-          h2: 'H2',
-          refer: 'REFER',
-          ul: 'UL',
-          ol: 'OL'
+        let name, style, map
+        if (node.parentNode.nodeName === 'P') {
+          name = node.parentNode.className
+          map = {
+            h1: 'H1',
+            h2: 'H2',
+            refer: 'REFER'
+          }
         }
-        const style = map[className] || 'CONTENT'
+        if (node.parentNode.nodeName === 'LI') {
+          name = node.parentNode.parentNode.nodeName.toLowerCase()
+          map = {
+            ul: 'UL',
+            ol: 'OL'
+          }
+        }
+        style = map[name] || 'CONTENT'
         if (style === 'OL') {
           const ul = node.parentNode.parentNode
-          const li = ul.querySelectorAll(`.${style.toLowerCase()}`)
+          const li = ul.querySelectorAll('li')
           node.data && this.dataOutput.push({
             style,
             text: node.data,
@@ -611,23 +568,34 @@ export default class MEditor {
             style
           })
         }
-      } else if (node.nodeName == 'BR' || (node.nodeName == 'P' && node.innerHTML === '')) {
-        let className = node.parentNode.className
-        if (className === 'ul' || className === 'ol') {
+      } else if (node.nodeName == 'BR') {
+        let nodeName = node.parentNode.parentNode.nodeName
+        if (nodeName === 'UL' || nodeName === 'OL') {
           const ul = node.parentNode.parentNode
-          const li = ul.querySelectorAll(`.${className}`)
+          const li = ul.querySelectorAll('li')
           this.dataOutput.push({
-            style: className.toUpperCase(),
+            style: nodeName.toLowerCase(),
             text: '',
-            index: className === 'ol' && Array.from(li).findIndex(li => li === node.parentNode) + 1,
+            index: nodeName === 'OL' && Array.from(li).findIndex(li => li === node.parentNode) + 1,
             type: 'TEXT'
           })
+        } else if (node.previousSibling && node.previousSibling.nodeName === '#text') {
+
+        } else if (node.nextSibling && node.nextSibling.nodeName === '#text') {
+
         } else {
           this.dataOutput.push({
             type: 'TEXT',
-            text: ''
+            text: '',
+            style: 'CONTENT'
           })
         }
+      } else if (node.nodeName == 'P' && node.innerHTML === '') {
+        this.dataOutput.push({
+          type: 'TEXT',
+          text: '',
+          style: 'CONTENT'
+        })
       } else {
         this._getData(node.childNodes)
       }
