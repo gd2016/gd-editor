@@ -574,7 +574,7 @@ export default class MEditor {
           const ul = node.parentNode.parentNode
           const li = ul.querySelectorAll('li')
           this.dataOutput.push({
-            style: nodeName.toLowerCase(),
+            style: nodeName,
             text: '',
             index: nodeName === 'OL' && Array.from(li).findIndex(li => li === node.parentNode) + 1,
             type: 'TEXT'
