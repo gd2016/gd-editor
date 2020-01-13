@@ -536,15 +536,20 @@ export default class MEditor {
 
       if (node.classList && node.classList.contains('m-editor-block')) {
         if (node.classList.contains('dls-video-box')) {
-          let src = node.querySelector('video').src
+          let video = node.querySelector('video')
+          let src = video.src
+          let thumb = 'https:' + video.getAttribute('thumb')
           const txt = node.querySelector('.dls-video-capture')
           if (src.indexOf('http:') === 0) {
             src = src.replace('http:', 'https:')
           }
+
           this.dataOutput.push({
             type: 'VIDEO',
             url: src,
-            text: txt.innerText
+            text: txt.innerText,
+            duration: video.duration,
+            thumb
           })
         } else {
           const img = node.querySelector('img')

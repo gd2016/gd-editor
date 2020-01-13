@@ -24,6 +24,7 @@ export default class img {
   }
   init () {
     this.editor.contentContainer.addEventListener('keydown', this._handleKeyDown.bind(this))
+    this.editor.contentContainer.addEventListener('keyup', this._handleKeyUp.bind(this))
   }
   initCommand () {
     // return this.editor.insertHtml(template({ src: '//video.allhistory.com/5e1bde079b11d23010573833.mp4' }))
@@ -59,6 +60,7 @@ export default class img {
           const progress = this[file.name + index].querySelector('.progress')
           video.controls = true
           video.src = res.data.videoUrl
+          video.setAttribute('thumb', res.data.videoUrl.replace('.mp4', '.jpg'))
           progress.parentNode.removeChild(progress)
           this[file.name + index].prepend(video)
         } else {
@@ -74,6 +76,13 @@ export default class img {
 
   _handleKeyDown (e) {
     if (e.code === 'Enter' && e.target.className === 'dls-video-capture') {
+      e.preventDefault()
+    }
+  }
+  _handleKeyUp (e) {
+    if (e.code !== 'Backspace' && e.target.className === 'dls-video-capture' && e.target.innerText.length >= 60) {
+      new Alert({ type: 'error', text: `视频描述最多输入60个字`, position: 'top-center' })
+      e.target.innerText = e.target.innerText.substring(0, 60)
       e.preventDefault()
     }
   }

@@ -17,6 +17,7 @@ export default class img {
   }
   init () {
     this.editor.contentContainer.addEventListener('keydown', this._handleKeyDown.bind(this))
+    this.editor.contentContainer.addEventListener('keyup', this._handleKeyUp.bind(this))
   }
   _getImgToBase64 (url, callback) {
     var canvas = document.createElement('canvas')
@@ -124,6 +125,9 @@ export default class img {
 
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
+      }).catch(err => {
+        new Alert({ type: 'error', text: `上传失败${err.status}`, position: 'top-center' })
+        imgArr[0].parentNode.parentNode.removeChild(imgArr[0].parentNode)
       }).finally(res => {
         imgArr[0].classList.remove(`img${id}`)
         urlArr.shift()
@@ -134,6 +138,13 @@ export default class img {
 
   _handleKeyDown (e) {
     if (e.code === 'Enter' && e.target.className === 'dls-image-capture') {
+      e.preventDefault()
+    }
+  }
+  _handleKeyUp (e) {
+    if (e.code !== 'Backspace' && e.target.className === 'dls-image-capture' && e.target.innerText.length >= 60) {
+      new Alert({ type: 'error', text: `图片描述最多输入60个字`, position: 'top-center' })
+      e.target.innerText = e.target.innerText.substring(0, 60)
       e.preventDefault()
     }
   }

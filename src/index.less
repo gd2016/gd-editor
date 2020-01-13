@@ -83,23 +83,17 @@
       width: 100%;
       border: 2px solid transparent;
       text-align: center;
-      .dls-image-capture{
+      .dls-image-capture,.dls-video-capture{
         outline: none;
         border-top: 2px solid transparent;
-        // white-space: nowrap;
-        font-size: 12px;
-      }
-      .dls-video-capture{
-        outline: none;
-        border-top: 2px solid transparent;
-        // white-space: nowrap;
+        white-space: initial;
         font-size: 12px;
       }
       &.loading{
         min-width: 200px;
         min-height: 200px;
         background-repeat: no-repeat;
-        background-position: 0;
+        background-position: center;
         .dls-image-capture,img{
           border: none;
         }

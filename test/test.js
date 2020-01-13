@@ -42,8 +42,10 @@ document.querySelector('#getData').addEventListener('click', () => {
       } else {
         str += `<p>${item.text}</p><hr/>`
       }
+    } else if (item.type === 'IMAGE') {
+      str += item.url + '<br/>capture:' + item.text + '<hr/>'
     } else {
-      str += item.url + 'capture:' + item.text + '<hr/>'
+      str += `${item.url}<br/>capture: ${item.text} <br/>duration: ${item.duration}<br/>thumb: ${item.thumb}<hr/>`
     }
   })
   console.log(editor.getData())
