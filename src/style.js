@@ -45,9 +45,9 @@ export default class Style {
     }
   }
   initCommand () {
-    if (!window.getSelection().isCollapsed) {
-      return this._replaceSelection()
-    }
+    // if (!window.getSelection().isCollapsed) {
+    //   return this._replaceSelection()
+    // }
     const selectNode = this.editor.selection && this.editor.selection.endContainer
     if (!selectNode) return
     this.onoff = !this.editor.updateToolbarStatus(this.type)

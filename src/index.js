@@ -412,7 +412,7 @@ export default class MEditor {
    */
   _bindPaste (e) {
     e.preventDefault()
-    if (this.selection.endContainer.parentNode.classList.contains('dls-image-capture')) {
+    if (this.getParents(this.selection.endContainer, 'dls-image-capture')) {
       let txt = e.clipboardData.getData('text')
       let textNode = document.createTextNode(txt)
       return this.selection.insertNode(textNode)
