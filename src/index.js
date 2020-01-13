@@ -1,5 +1,6 @@
 import './index.less'
 import imagePlugin from './image'
+import videoPlugin from './video'
 import stylePlugin from './style'
 // import ulPlugin from './ul'
 import ulPlugin from './list'
@@ -8,44 +9,55 @@ export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'h1', 'h2', 'refer', 'ol', 'ul'],
+      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul'],
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       basePlugins: [{
         constructor: imagePlugin,
-        name: 'image'
+        name: 'image',
+        params: {
+          url: '/api/image/upload/v1',
+          formName: 'userfile'
+        }
+      }, {
+        constructor: videoPlugin,
+        name: 'video',
+        params: {
+          url: '/api/video/upload/v1',
+          formName: 'userfile'
+        }
       }, {
         constructor: stylePlugin,
         name: 'h1',
-        config: {
+        params: {
           type: 'h1',
           label: '1级标题'
         }
       }, {
         constructor: stylePlugin,
         name: 'h2',
-        config: {
+        params: {
           type: 'h2',
           label: '2级标题'
         }
       }, {
         constructor: ulPlugin,
         name: 'ol',
-        config: {
+        params: {
           label: '有序列表'
         }
 
       }, {
         constructor: ulPlugin,
         name: 'ul',
-        config: {
+        params: {
           label: '无序列表'
         }
       }, {
         constructor: stylePlugin,
         name: 'refer',
-        config: {
+        params: {
           type: 'refer',
           label: '插入引用'
         }
@@ -54,8 +66,6 @@ export default class MEditor {
       maxHeight: 400000,
       content: '',
       host: '__ALLHISTORY_HOSTNAME__',
-      url: '/api/image/upload/v1',
-      formName: 'userfile',
       dataOutput: [],
       onReady (editor) {}
     }, props)
@@ -88,7 +98,7 @@ export default class MEditor {
         const pluginName = this._toCamelCase(plugin.name)
         if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
           // plugin.type && plugin.constructor.setType(plugin.type)
-          this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, url: this.url, formName: this.formName, ...plugin.config })
+          this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
           this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
             this[pluginName].initCommand()
           }
@@ -393,7 +403,7 @@ export default class MEditor {
    */
   _getlastImg (node) {
     if (!node) return false
-    if (node.classList && node.classList.contains('dls-image-capture')) {
+    if (node.classList && (node.classList.contains('dls-image-capture') || node.classList.contains('dls-video-capture'))) {
       return node
     }
     if (node.nodeName === '#text' && node.nodeValue === '') {
@@ -412,7 +422,7 @@ export default class MEditor {
    */
   _bindPaste (e) {
     e.preventDefault()
-    if (this.getParents(this.selection.endContainer, 'dls-image-capture')) {
+    if (this.getParents(this.selection.endContainer, 'dls-image-capture') || this.getParents(this.selection.endContainer, 'dls-video-capture')) {
       let txt = e.clipboardData.getData('text')
       let textNode = document.createTextNode(txt)
       return this.selection.insertNode(textNode)
@@ -525,15 +535,28 @@ export default class MEditor {
       // }
 
       if (node.classList && node.classList.contains('m-editor-block')) {
-        const img = node.querySelector('img')
-        const txt = node.querySelector('.dls-image-capture')
-        this.dataOutput.push({
-          type: 'IMAGE',
-          url: img.currentSrc,
-          height: img.naturalHeight,
-          width: img.naturalWidth,
-          text: txt.innerText
-        })
+        if (node.classList.contains('dls-video-box')) {
+          let src = node.querySelector('video').src
+          const txt = node.querySelector('.dls-video-capture')
+          if (src.indexOf('http:') === 0) {
+            src = src.replace('http:', 'https:')
+          }
+          this.dataOutput.push({
+            type: 'VIDEO',
+            url: src,
+            text: txt.innerText
+          })
+        } else {
+          const img = node.querySelector('img')
+          const txt = node.querySelector('.dls-image-capture')
+          this.dataOutput.push({
+            type: 'IMAGE',
+            url: img.currentSrc,
+            height: img.naturalHeight,
+            width: img.naturalWidth,
+            text: txt.innerText
+          })
+        }
       } else if (node.nodeName === '#text') {
         let name, style, map
         if (node.parentNode.nodeName === 'P') {

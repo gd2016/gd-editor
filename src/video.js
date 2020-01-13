@@ -1,8 +1,15 @@
 import Service from './service'
 import { Alert } from '@portal/dls-ui'
-const template = (config) => {
-  const img = config.src ? `<img src=${config.src} />` : ''
-  return `<div class="m-editor-block loading" ondragstart="return false">${img}<p class="dls-image-capture" contenteditable="true"></p></div>`
+const template = () => {
+  const video = `<div class="progress">
+    <div class="progress-bar">
+      <div class="progress-bar__outer">
+        <div class="progress-bar__inner" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="progress__text">0%</div>
+  </div>`
+  return `<div class="m-editor-block dls-video-box" ondragstart="return false">${video}<p class="dls-video-capture" contenteditable="true"></p></div>`
 }
 export default class img {
   constructor (props) {
@@ -18,48 +25,14 @@ export default class img {
   init () {
     this.editor.contentContainer.addEventListener('keydown', this._handleKeyDown.bind(this))
   }
-  _getImgToBase64 (url, callback) {
-    var canvas = document.createElement('canvas')
-    var ctx = canvas.getContext('2d')
-    var img = new Image()// 通过构造函数来创建的 img 实例，在赋予 src 值后就会立刻下载图片，相比 createElement() 创建 <img> 省去了 append()，也就避免了文档冗余和污染
-    img.crossOrigin = 'Anonymous'
-    // 要先确保图片完整获取到，这是个异步事件
-    img.onload = function () {
-      canvas.height = img.height// 确保canvas的尺寸和图片一样
-      canvas.width = img.width
-      ctx.drawImage(img, 0, 0)// 将图片绘制到canvas中
-      var dataURL = canvas.toDataURL('image/png')// 转换图片为dataURL,传第二个参数可压缩图片,前提是图片格式jpeg或者webp格式的
-      callback(dataURL)// 调用回调函数
-      canvas = null
-    }
-    img.onerror = function () {
-      callback(null)
-      new Alert({ type: 'error', text: '加载失败，该图不支持浏览', position: 'top-center' })
-    }
-    img.src = url
-  }
-  // 将base64转换为文件对象
-  _dataURLtoFile (dataurl, filename) {
-    var arr = dataurl.split(',')
-    var mime = arr[0].match(/:(.*?);/)[1]
-    var bstr = atob(arr[1])
-    var n = bstr.length
-    var u8arr = new Uint8Array(n)
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n)
-    }
-    // 转换成file对象
-    return new File([u8arr], filename, { type: mime })
-    // 转换成成blob对象
-    // return new Blob([u8arr],{type:mime});
-  }
   initCommand () {
+    // return this.editor.insertHtml(template({ src: '//video.allhistory.com/5e1bde079b11d23010573833.mp4' }))
     const file = document.createElement('input')
     const self = this
     file.name = this.name
     file.type = 'file'
     file.multiple = true
-    file.accept = '.jpg,.jpeg,.png,.gif'
+    file.accept = '.mp4'
     file.click()
     file.onchange = function (e) {
       self._upload(this.files)
@@ -67,68 +40,40 @@ export default class img {
   }
   _upload (files) {
     Array.from(files).forEach((file, index) => {
+      if (this[file.name + index]) return
       let formData = new FormData()
       formData.append(this.formName, file)
-      this['node' + index] = this.editor.insertHtml(template({ src: '' }))
-      Service.saveImage(this.host + this.url, formData).then(res => {
+      this[file.name + index] = this.editor.insertHtml(template())
+      Service.saveVideo(this.host + this.url, formData, {
+        onProgress: (e) => {
+          if (e.total == 0) {
+            new Alert({ text: '请重试', type: 'error', position: 'top-center' })
+          } else {
+            this[file.name + index].querySelector('.progress__text').innerText = `${Math.floor(e.loaded / e.total * 100)}%`
+            this[file.name + index].querySelector('.progress-bar__inner').style.width = `${Math.floor(e.loaded / e.total * 100)}%`
+          }
+        }
+      }).then(res => {
         if (res.code === 200) {
-          const img = document.createElement('img')
-          img.src = res.data.imageUrl
-          this['node' + index].prepend(img)
-          img.onload = () => {
-            this['node' + index].classList.remove('loading')
-          }
-          img.onerror = () => {
-            this['node' + index].classList.remove('loading')
-          }
+          const video = document.createElement('video')
+          const progress = this[file.name + index].querySelector('.progress')
+          video.controls = true
+          video.src = res.data.videoUrl
+          progress.parentNode.removeChild(progress)
+          this[file.name + index].prepend(video)
         } else {
-          this['node' + index].classList.remove('loading')
+          this[file.name + index].parentNode.removeChild(this[file.name + index])
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
-      })
-    })
-  }
-
-  replaceImg (urlArr, id) {
-    const imgArr = document.querySelectorAll(`.img${id}`)
-    const url = urlArr[0]
-    if (!url) return
-    this._getImgToBase64(url, (data) => {
-      if (!data) {
-        imgArr[0].parentNode.classList.remove('loading')
-        imgArr[0].classList.remove(`img${id}`)
-        imgArr[0].src = null
-        urlArr.shift()
-        return this.replaceImg(urlArr, id)
-      }
-      var file = this._dataURLtoFile(data, 'all')
-      let formData = new FormData()
-
-      formData.append(this.formName, file)
-      Service.saveImage(this.host + this.url, formData).then(res => {
-        if (res.code === 200) {
-          imgArr[0].src = res.data.imageUrl
-          imgArr[0].onload = () => {
-            imgArr[0].parentNode.classList.remove('loading')
-          }
-          imgArr[0].onerror = () => {
-            imgArr[0].parentNode.classList.remove('loading')
-          }
-        } else {
-          imgArr[0].parentNode.classList.remove('loading')
-
-          new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
-        }
-      }).finally(res => {
-        imgArr[0].classList.remove(`img${id}`)
-        urlArr.shift()
-        this.replaceImg(urlArr, id)
+      }).catch(err => {
+        new Alert({ type: 'error', text: `上传失败${err.status}`, position: 'top-center' })
+        this[file.name + index].parentNode.removeChild(this[file.name + index])
       })
     })
   }
 
   _handleKeyDown (e) {
-    if (e.code === 'Enter' && e.target.className === 'dls-image-capture') {
+    if (e.code === 'Enter' && e.target.className === 'dls-video-capture') {
       e.preventDefault()
     }
   }

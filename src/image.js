@@ -68,24 +68,28 @@ export default class img {
   }
   _upload (files) {
     Array.from(files).forEach((file, index) => {
+      if (this[file.name + index]) return
       let formData = new FormData()
       formData.append(this.formName, file)
-      this['node' + index] = this.editor.insertHtml(template({ src: '' }))
+      this[file.name + index] = this.editor.insertHtml(template({ src: '' }))
       Service.saveImage(this.host + this.url, formData).then(res => {
         if (res.code === 200) {
           const img = document.createElement('img')
           img.src = res.data.imageUrl
-          this['node' + index].prepend(img)
+          this[file.name + index].prepend(img)
           img.onload = () => {
-            this['node' + index].classList.remove('loading')
+            this[file.name + index].classList.remove('loading')
           }
           img.onerror = () => {
-            this['node' + index].classList.remove('loading')
+            this[file.name + index].classList.remove('loading')
           }
         } else {
-          this['node' + index].classList.remove('loading')
+          this[file.name + index].parentNode.removeChild(this[file.name + index])
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
+      }).catch(err => {
+        new Alert({ type: 'error', text: `上传失败${err.status}`, position: 'top-center' })
+        this[file.name + index].parentNode.removeChild(this[file.name + index])
       })
     })
   }

@@ -11,7 +11,8 @@ function sendRequest (type, url, params = '', config) {
   config = Object.assign({
     encrypt: false,
     fingerprint: false,
-    withCredentials: true
+    withCredentials: true,
+    onProgress () {}
   }, config)
   const __superfetch__ = new Superfetch(config)
 
@@ -28,5 +29,8 @@ export default {
   // 图片上传接口
   saveImage (url, params) {
     return sendRequest('post', url, params)
+  },
+  saveVideo (url, params, config) {
+    return sendRequest('post', url, params, config)
   }
 }
