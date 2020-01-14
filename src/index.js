@@ -190,10 +190,20 @@ export default class MEditor {
     this.contentContainer.addEventListener('keyup', this._keyup.bind(this))
     this.contentContainer.addEventListener('click', this._click.bind(this))
   }
+  /**
+   * @function 将文本节点、元素节点转换为元素节点
+   * @param  {node} node 文本节点、元素节点
+   * @return {type} 元素节点
+   */
   getNode (node) {
     if (node.nodeName === '#text') return node.parentNode
     return node
   }
+  /**
+   * @function 判断节点是否在类名为className的父节点下
+   * @param  {type} node      文本节点、元素节点
+   * @param  {type} className class类名
+   */
   getParents (node, className) {
     while (!this.getNode(node).classList.contains('dls-m-editor-content')) {
       if (this.getNode(node).classList.contains(className)) {
@@ -203,6 +213,11 @@ export default class MEditor {
     }
     return false
   }
+  /**
+   * @function 更新toolbar状态
+   * @param  {string} 特定的tool类型
+   * @return {bool} 状态是否激活
+   */
   updateToolbarStatus (type) {
     const selectNode = this.selection && this.selection.endContainer
     if (this.getParents(selectNode, 'dls-image-capture')) {
@@ -241,6 +256,11 @@ export default class MEditor {
       }
     }
   }
+  /**
+   * @function 将toolbar置为bool状态
+   * @param  {Boolean}  是否激活
+   * @param  {type} 节当前光标所在节点
+   */
   updateTool (bool, node) {
     const icons = this.toolbarDom.querySelectorAll('.icon-container')
     let className = node.className
@@ -307,6 +327,9 @@ export default class MEditor {
       this.selection = selection.getRangeAt(0)
     }
   }
+  /**
+   * @function 实时获取selcetion
+   */
   _keyup (e) {
     this._getSelection()
     if (e && e.code === 'Backspace') {
@@ -331,6 +354,10 @@ export default class MEditor {
     }
     this.updateToolbarStatus()
   }
+  /**
+   * @function 按退格键时，视情况选中block块
+   * @param  {type} 事件对象
+   */
   _selectBlock (e) {
     const node = this.selection.endContainer
     const preDom = this.selection.endContainer.previousSibling
@@ -364,7 +391,7 @@ export default class MEditor {
     }
   }
   /**
-   * @function 点击块的时候高亮显示
+   * @function 点击块的时候高亮显示，如果最后一个节点是块，则添加一个空行
    */
   _click (e) {
     this._getSelection()
@@ -399,7 +426,7 @@ export default class MEditor {
     }
   }
   /**
-   * @function 判断最后一个节点是否为图片
+   * @function 判断最后一个节点是否为图片或者block块
    */
   _getlastImg (node) {
     if (!node) return false

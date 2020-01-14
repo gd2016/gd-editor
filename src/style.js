@@ -18,6 +18,7 @@ export default class Style {
     if (selectStr.trim != '') {
       var rang = selecter.getRangeAt(0)
       // return console.dir(rang.endContainer)
+      if (rang.endContainer.parentNode.nodeName === 'LI') return // 列表不允许添加样式
 
       const p = document.createElement('p')
       p.innerHTML = selectStr
@@ -45,14 +46,14 @@ export default class Style {
     }
   }
   initCommand () {
-    // if (!window.getSelection().isCollapsed) {
-    //   return this._replaceSelection()
-    // }
+    if (!window.getSelection().isCollapsed) {
+      return this._replaceSelection()
+    }
     const selectNode = this.editor.selection && this.editor.selection.endContainer
     if (!selectNode) return
     this.onoff = !this.editor.updateToolbarStatus(this.type)
     if (this.onoff) {
-      if (selectNode.nodeName === '#text' && selectNode.parentNode.nodeName === 'P') {
+      if (selectNode.nodeName === '#text' && selectNode.parentNode.nodeName === 'P') { // 父节点添加type
         // const txt = selectNode.data
         // const p = document.createElement('p')
         // p.innerHTML = txt
@@ -60,7 +61,7 @@ export default class Style {
         // selectNode.parentNode.replaceChild(p, selectNode)
         // this.editor._setRange(p)
         this.editor.updateTool(true, { className: this.type })
-      } else if (selectNode.nodeName === 'P') {
+      } else if (selectNode.nodeName === 'P') { // 只针对p标签，li标签return
         this._setClass(selectNode, this.type)
         this.editor.updateTool(true, { className: this.type })
       }
