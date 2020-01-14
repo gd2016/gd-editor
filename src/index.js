@@ -220,7 +220,7 @@ export default class MEditor {
    */
   updateToolbarStatus (type) {
     const selectNode = this.selection && this.selection.endContainer
-    if (this.getParents(selectNode, 'dls-image-capture')) {
+    if (this.getParents(selectNode, 'dls-image-capture') || this.getParents(selectNode, 'dls-video-capture')) {
       return this.toolbarDom.classList.add('disable')
     } else {
       this.toolbarDom.classList.remove('disable')
