@@ -21,7 +21,7 @@ export default class Style {
       if (rang.endContainer.parentNode.nodeName === 'LI') return // 列表不允许添加样式
 
       const p = document.createElement('p')
-      p.innerHTML = selectStr
+      p.innerText = selectStr
       if (rang.endContainer.nodeName === '#text') {
         if (rang.endContainer.parentNode.classList.contains(this.type)) {
           rang.endContainer.parentNode.classList.remove(this.type)
@@ -36,7 +36,9 @@ export default class Style {
             this.editor.insertAfter(p, rang.endContainer.parentNode)
             // rang.endContainer.parentNode.parentNode.insertBefore(p, rang.endContainer.parentNode.nextSibling) // 在选中文档的节点后加入新节点
           } else {
-            rang.surroundContents(p)
+            p.innerText = rang.toString()
+            rang.deleteContents()
+            this.editor.insertHtml(p)
           }
 
           this.editor._setRange(p)

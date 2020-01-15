@@ -128,9 +128,15 @@ export default class MEditor {
    * @param  {string} domStr    html字符串
    */
   insertHtml (domStr) {
-    const objE = document.createElement('div')
-    objE.innerHTML = domStr
-    const node = objE.childNodes[0]
+    let objE, node
+    if (typeof domStr === 'string') {
+      objE = document.createElement('div')
+      objE.innerHTML = domStr
+      node = objE.childNodes[0]
+    } else {
+      node = domStr
+    }
+    console.log(node)
     if (!this.selection) { // 没有聚焦时进行的插入操作
       this.contentContainer.appendChild(node)
       return node
