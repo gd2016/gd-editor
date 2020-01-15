@@ -60,7 +60,7 @@ export default class img {
           const progress = this[file.name + index].querySelector('.progress')
           video.controls = true
           video.src = res.data.videoUrl
-          video.setAttribute('thumb', res.data.videoUrl.replace('.mp4', '.jpg'))
+          // video.setAttribute('thumb', res.data.videoUrl.replace('.mp4', '.jpg'))
           progress.parentNode.removeChild(progress)
           this[file.name + index].prepend(video)
         } else {

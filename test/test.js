@@ -10,6 +10,7 @@ const editor = new test({
   //   type: 'TEXT',
   //   text: '12312cx xc asd     as d'
   // }],
+  // toolbar: ['video'],
   host: 'http://10.4.40.168',
   onReady: (editor) => {
     // editor.setData([{
@@ -45,7 +46,7 @@ document.querySelector('#getData').addEventListener('click', () => {
     } else if (item.type === 'IMAGE') {
       str += item.url + '<br/>capture:' + item.text + '<hr/>'
     } else {
-      str += `${item.url}<br/>capture: ${item.text} <br/>duration: ${item.duration}<br/>thumb: ${item.thumb}<hr/>`
+      str += `${item.url}<br/>capture: ${item.text} <br/><hr/>`
     }
   })
   console.log(editor.getData())

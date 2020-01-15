@@ -565,7 +565,7 @@ export default class MEditor {
         if (node.classList.contains('dls-video-box')) {
           let video = node.querySelector('video')
           let src = video.src
-          let thumb = 'https:' + video.getAttribute('thumb')
+          // let thumb = 'https:' + video.getAttribute('thumb')
           const txt = node.querySelector('.dls-video-capture')
           if (src.indexOf('http:') === 0) {
             src = src.replace('http:', 'https:')
@@ -574,9 +574,9 @@ export default class MEditor {
           this.dataOutput.push({
             type: 'VIDEO',
             url: src,
-            text: txt.innerText,
-            duration: video.duration,
-            thumb
+            text: txt.innerText
+            // duration: video.duration,
+            // thumb
           })
         } else {
           const img = node.querySelector('img')
