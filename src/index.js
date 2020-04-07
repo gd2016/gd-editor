@@ -613,7 +613,7 @@ export default class MEditor {
           }
         }
         style = map[name] || 'CONTENT'
-        if (style === 'OL') {
+        if (style === 'OL' || style === 'UL') {
           const ul = node.parentNode.parentNode
           const li = ul.querySelectorAll('li')
           node.data && this.dataOutput.push({
@@ -637,7 +637,7 @@ export default class MEditor {
           this.dataOutput.push({
             style: nodeName,
             text: '',
-            index: nodeName === 'OL' && Array.from(li).findIndex(li => li === node.parentNode) + 1,
+            index: (nodeName === 'OL' || nodeName === 'UL') && Array.from(li).findIndex(li => li === node.parentNode) + 1,
             type: 'TEXT'
           })
         } else if (node.previousSibling && node.previousSibling.nodeName === '#text') {
@@ -683,15 +683,39 @@ export default class MEditor {
   innerText () {
     return this.contentContainer.innerText
   }
+  _dataMap (data, dataArray, index) {
+    const dataMap = {
+      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img src=${data.url} /><p class="dls-image-capture" contenteditable="true">${data.text}</p></div>`,
+      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${data.text}</p></div>`,
+      TEXT: {
+        CONTENT: `<p>${data.text}</p>`,
+        H1: `<p class="h1">${data.text}</p>`,
+        H2: `<p class="h2">${data.text}</p>`,
+        REFER: `<p class="refer">${data.text}</p>`
+      }
+    }
+    if (data.type === 'TEXT') {
+      if (data.style === 'OL' || data.style === 'UL') {
+        const next = dataArray[index + 1]
+        if (data.index === 1) {
+          return `<${data.style.toLowerCase()}><li>${data.text}</li>`
+        } else if ((next.style != 'OL' && next.style != 'UL') || next.index == 1) {
+          return `<li>${data.text}</li></${data.style.toLowerCase()}>`
+        } else {
+          return `<li>${data.text}</li>`
+        }
+      } else {
+        return dataMap[data.type][data.style]
+      }
+    } else {
+      return dataMap[data.type]
+    }
+  }
   setData (dataArray) {
     let content = ''
-    dataArray.forEach(data => {
-      if (data.type === 'TEXT') {
-        content += `<p>${data.text}</p>`
-      }
-      if (data.type === 'IMAGE') {
-        content += `<div class="m-editor-block" ondragstart="return false"><img src=${data.url} /></div>`
-      }
+
+    dataArray.forEach((data, index) => {
+      content += this._dataMap(data, dataArray, index)
     })
     this.contentContainer.innerHTML = content
   }

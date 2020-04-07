@@ -55,16 +55,22 @@ document.querySelector('#getData').addEventListener('click', () => {
 })
 
 document.querySelector('#setData').addEventListener('click', () => {
-  editor.setData([{
-    type: 'TEXT',
-    text: '12312'
-  }, {
-    type: 'TEXT',
-    text: '12312'
-  }, {
-    type: 'TEXT',
-    text: '12312cx xc asd     as d'
-  }])
+  editor.setData([
+    { type: 'TEXT', text: 'asd', style: 'CONTENT' },
+    { type: 'IMAGE', url: 'http://img.allhistory.com/5e8c2adf9b11d2028b89c006.jpg', height: 600, width: 960, text: '' },
+    { type: 'TEXT', text: 'asd', style: 'CONTENT' },
+    { type: 'VIDEO', url: 'https://video.allhistory.com/5e8c2ae79b11d2028b89c007.mp4', text: '' },
+    { type: 'TEXT', text: '1212', style: 'H1' },
+    { type: 'TEXT', text: '121', style: 'H2' },
+    { type: 'TEXT', text: '12', style: 'REFER' },
+    { type: 'TEXT', text: '1212', style: 'REFER' },
+    { style: 'OL', text: '1212', index: 1, type: 'TEXT' },
+    { style: 'OL', text: '12123', index: 2, type: 'TEXT' },
+    { style: 'UL', text: '', index: 1, type: 'TEXT' },
+    { type: 'TEXT', text: '121121', index: 2, style: 'UL' },
+    { type: 'TEXT', text: '2', index: 3, style: 'UL' },
+    { type: 'TEXT', text: '12', style: 'REFER' }
+  ])
 })
 
 // document.onclick = () => {
