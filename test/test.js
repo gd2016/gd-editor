@@ -57,10 +57,10 @@ document.querySelector('#getData').addEventListener('click', () => {
 document.querySelector('#setData').addEventListener('click', () => {
   editor.setData([
     { type: 'TEXT', text: 'asd', style: 'CONTENT' },
-    { type: 'IMAGE', url: 'http://img.allhistory.com/5e8c2adf9b11d2028b89c006.jpg', height: 600, width: 960, text: '' },
+    { type: 'IMAGE', url: 'http://img.allhistory.com/5e8c2adf9b11d2028b89c006.jpg', height: 600, width: 960, text: null },
     { type: 'TEXT', text: 'asd', style: 'CONTENT' },
-    { type: 'VIDEO', url: 'https://video.allhistory.com/5e8c2ae79b11d2028b89c007.mp4', text: '' },
-    { type: 'TEXT', text: '1212', style: 'H1' },
+    { type: 'VIDEO', url: 'https://video.allhistory.com/5e8c2ae79b11d2028b89c007.mp4', text: null },
+    { type: 'TEXT', text: null, style: 'H1' },
     { type: 'TEXT', text: '121', style: 'H2' },
     { type: 'TEXT', text: '12', style: 'REFER' },
     { type: 'TEXT', text: '1212', style: 'REFER' },

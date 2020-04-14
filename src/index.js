@@ -685,8 +685,8 @@ export default class MEditor {
   }
   _dataMap (data, dataArray, index) {
     const dataMap = {
-      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img src=${data.url} /><p class="dls-image-capture" contenteditable="true">${data.text}</p></div>`,
-      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${data.text}</p></div>`,
+      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img src=${data.url} /><p class="dls-image-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
+      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
       TEXT: {
         CONTENT: `<p>${data.text}</p>`,
         H1: `<p class="h1">${data.text}</p>`,
