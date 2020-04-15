@@ -1,7 +1,7 @@
 import Service from './service'
 import { Alert } from '@portal/dls-ui'
 const template = (config) => {
-  const img = config.src ? `<img src=${config.src} />` : ''
+  const img = config.src ? `<img data-src="${config.src}" src=${config.src} />` : ''
   return `<div class="m-editor-block loading" ondragstart="return false">${img}<p class="dls-image-capture" contenteditable="true"></p></div>`
 }
 export default class img {
@@ -77,6 +77,7 @@ export default class img {
         if (res.code === 200) {
           const img = document.createElement('img')
           img.src = res.data.imageUrl
+          img.setAttribute('data-src', res.data.imageUrl)
           this[file.name + index].prepend(img)
           img.onload = () => {
             this[file.name + index].classList.remove('loading')
@@ -114,6 +115,7 @@ export default class img {
       Service.saveImage(this.host + this.url, formData).then(res => {
         if (res.code === 200) {
           imgArr[0].src = res.data.imageUrl
+          imgArr[0].setAttribute('data-src', res.data.imageUrl)
           imgArr[0].onload = () => {
             imgArr[0].parentNode.classList.remove('loading')
           }

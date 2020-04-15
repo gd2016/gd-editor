@@ -587,9 +587,10 @@ export default class MEditor {
         } else {
           const img = node.querySelector('img')
           const txt = node.querySelector('.dls-image-capture')
+          console.dir(img)
           this.dataOutput.push({
             type: 'IMAGE',
-            url: img.currentSrc,
+            url: img.getAttribute('data-src'),
             height: img.naturalHeight,
             width: img.naturalWidth,
             text: txt.innerText
@@ -685,8 +686,8 @@ export default class MEditor {
   }
   _dataMap (data, dataArray, index) {
     const dataMap = {
-      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img src=${data.url} /><p class="dls-image-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
-      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
+      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img data-src=${data.url} src=${data.url} /><p class="dls-image-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
+      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video data-src=${data.url} controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
       TEXT: {
         CONTENT: `<p>${data.text}</p>`,
         H1: `<p class="h1">${data.text}</p>`,
