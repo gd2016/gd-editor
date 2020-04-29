@@ -1,9 +1,9 @@
-import { PopBox } from '@portal/dls-ui'
+import { PopBox, Alert } from '@portal/dls-ui'
 import SearchBox from '@portal/dls-searchbox'
 const template = function () {
   return `<div class="topic-search-box search-box">
     <input type="text" class="link-text"  placeholder="输入话题名称"/>
-    <ul  class="topic-search-box-suggestions"></ul>
+    <ul  class="search-box-suggestions topic-search-box-suggestions"></ul>
   </div>`
 }
 export default class Topic {
@@ -26,10 +26,21 @@ export default class Topic {
       maskClass: 'topic-pop',
       $content: this.$html,
       onSubmit: () => {
-        const A = document.createElement('a')
-        A.innerHTML = ` ${this.name} `
+        if (!this.topicId || !this.name) {
+          return new Alert({
+            duration: 1000,
+            position: 'top-center',
+            type: 'error',
+            text: '请选择话题后再插入'
+          })
+        }
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
-          this.editor.appendChild(A)
+          return new Alert({
+            duration: 2000,
+            position: 'top-center',
+            type: 'error',
+            text: '请聚焦编辑器后再插入'
+          })
         } else {
           const node = selection.commonAncestorContainer
           const range = document.createRange()
@@ -39,8 +50,8 @@ export default class Topic {
           sel.removeAllRanges()
           sel.addRange(range)
           document.execCommand('insertHTML', false, ` <a class="topic" topic-id="${this.topicId}">${this.name}</a> `)
-          $('a.topic').css({ '-webkit-user-modify': 'read-only' })
         }
+        $('a.topic').css({ '-webkit-user-modify': 'read-only' })
         this.pop.close()
       }
     })
@@ -55,10 +66,14 @@ export default class Topic {
       absolute: true,
       key: 'tag',
       method: 'get',
-      domainName: '',
       params: {
         page: '1',
         size: '10'
+      },
+      domainName: '',
+      emitFocusEvent: () => {
+        this.topicId = ''
+        this.name = ''
       },
       noResultTip: true,
       onSelect: (entry) => {

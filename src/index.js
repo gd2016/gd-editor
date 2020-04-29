@@ -1,11 +1,12 @@
 import './index.less'
-import imagePlugin from './image'
-import videoPlugin from './video'
-import stylePlugin from './style'
+import imagePlugin from './plugins/image'
+import videoPlugin from './plugins/video'
+import stylePlugin from './plugins/style'
 // import ulPlugin from './ul'
-import topicPlugin from './topic'
-import ulPlugin from './list'
+import topicPlugin from './plugins/topic'
+import ulPlugin from './plugins/list'
 import xss from 'xss'
+import { dealTopic } from './untils/topic'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
@@ -693,30 +694,10 @@ export default class MEditor {
   innerText () {
     return this.contentContainer.innerText
   }
-  dealTopic (text, postTags) {
-    let arr = []
-    let start = 0
-    let processedArr = []
-    let finalStr = ''
-    postTags.map(item => {
-      arr.push(text.substring(start, item.paramOffset))
-      arr.push({ text: text.substring(item.paramOffset, item.paramOffset + item.wordLength), id: item.topicId })
-      start = item.paramOffset + item.wordLength
-    })
-    arr.push(text.substring(start, text.length))
-    arr.map((node, index) => {
-      if (index % 2 !== 0) {
-        node = `<a class="topic" topic-id="${node.id}">${node.text}</a>`
-      }
-      processedArr.push(node)
-    })
-    finalStr = processedArr.join('')
-    return finalStr
-  }
   _dataMap (data, dataArray, index) {
     let text = data.text
     if (data.postTags && data.postTags.length) {
-      text = this.dealTopic(text, data.postTags)
+      text = dealTopic(text, data.postTags)
     }
     const dataMap = {
       IMAGE: `<div class="m-editor-block" ondragstart="return false"><img data-src=${data.url} src=${data.url} /><p class="dls-image-capture" contenteditable="true">${text || ''}</p></div>`,
@@ -755,13 +736,5 @@ export default class MEditor {
     this.contentContainer.querySelectorAll('a.topic').forEach(node => {
       node.style['-webkit-user-modify'] = 'read-only'
     })
-  }
-  insertAfter (newElement, targetElement) {
-    var parent = targetElement.parentNode
-    if (parent.lastChild == targetElement) {
-      parent.appendChild(newElement)
-    } else {
-      parent.insertBefore(newElement, targetElement.nextSibling)
-    }
   }
 }

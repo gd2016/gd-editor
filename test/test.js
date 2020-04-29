@@ -1,6 +1,7 @@
 import test from '../src/index'
 import './pop-box.less'
 import './search-box.less'
+import show from '../src/renderData'
 const editor = new test({
   maxHeight: 350,
   container: document.querySelector('#editor-area'),
@@ -87,30 +88,7 @@ document.querySelector('#setData').addEventListener('click', () => {
     { type: 'TEXT', text: '12', style: 'REFER' }
   ])
 })
-
-// document.onclick = () => {
-//   console.log(window.getSelection(), window.getSelection().getRangeAt(0))
-// }
-// setTimeout(() => {
-//   const selection = window.getSelection().getRangeAt(0)
-//   var textNode = document.createTextNode('123')
-//   selection.insertNode(textNode)
-// }, 5000)
-const postTags = [{
-  paramOffset: 7,
-  topicId: '0766935267d9cf1634d5054b1a7edbdd',
-  topicName: '#测试#',
-  wordLength: 6 },
-{
-  paramOffset: 13,
-  topicId: '0766935267d9cf1634d5054b1a7edbdd',
-  topicName: '⬇️阿萨德',
-  wordLength: 7
-}]
-let text = 'asdasd ##测试###⬇️阿萨德# '
-let newText = ''
-postTags.forEach(topic => {
-  const a = `<a class='topic' topic-id="${topic.topicId}">${text.substr(topic.paramOffset, topic.wordLength)}</a>`
-  newText = text.substr(0, topic.paramOffset) + a + text.substr(topic.paramOffset + topic.wordLength)
-  console.log(newText)
+document.querySelector('#showData').addEventListener('click', () => {
+  let html = show(editor.getData())
+  $('.show-content').html(html)
 })

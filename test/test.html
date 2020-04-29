@@ -32,10 +32,25 @@
   .dls-video-icon{
     background: url('../static/video.svg');
   }
+  .dls-topic-icon{
+    background: url('../static/topic.png');
+  }
   .loading{
     background-image: url('../static/lazyloadImg.svg');
   }
-  
+  .clearfix::after{
+    display: block;
+    content: '';
+    clear: both;
+  }
+  .content{
+    white-space:pre-wrap;
+    display: inline-block;
+    width: 500px
+  }
+  .show-content{
+    margin-left: 100px;
+  }
 </style>
 <body>
     <!-- <script src="https://cdn.bootcss.com/jquery/1.12.1/jquery.min.js"></script>   -->
@@ -43,7 +58,11 @@
     <div id="editor-area"></div>
     <button id="getData">获取内容</button>
     <button id="setData">设置内容</button>
-    <div class="content" style="white-space:pre-wrap"></div>
+    <button id="showData">显示内容</button>
+    <div class="clearfix">
+      <div class="content" ></div>
+      <div class="content show-content" ></div>
+    </div>
     
     
     <!-- <script src="https://cdn.bootcss.com/eruda/1.5.4/eruda.js"></script> -->

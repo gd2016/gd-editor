@@ -1,4 +1,4 @@
-import Service from './service'
+import Service from '../service'
 import { Alert } from '@portal/dls-ui'
 const template = (config) => {
   const img = config.src ? `<img data-src="${config.src}" src=${config.src} />` : ''
