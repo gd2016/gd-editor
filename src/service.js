@@ -32,5 +32,8 @@ export default {
   },
   saveVideo (url, params, config) {
     return sendRequest('post', url, params, config)
+  },
+  getTopic (url, params) {
+    return sendRequest('get', url, params)
   }
 }

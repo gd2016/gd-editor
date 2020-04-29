@@ -1,4 +1,6 @@
 import test from '../src/index'
+import './pop-box.less'
+import './search-box.less'
 const editor = new test({
   maxHeight: 350,
   container: document.querySelector('#editor-area'),
@@ -11,7 +13,7 @@ const editor = new test({
   //   text: '12312cx xc asd     as d'
   // }],
   // toolbar: ['video'],
-  host: 'http://10.4.40.168',
+  host: 'http://10.4.40.168:8442',
   onReady: (editor) => {
     // editor.setData([{
     //   type: 'TEXT',
@@ -56,7 +58,20 @@ document.querySelector('#getData').addEventListener('click', () => {
 
 document.querySelector('#setData').addEventListener('click', () => {
   editor.setData([
-    { type: 'TEXT', text: 'asd', style: 'CONTENT' },
+    { type: 'TEXT',
+      text: 'asdasd ##测试###⬇️阿萨德# ',
+      style: 'CONTENT',
+      postTags: [{
+        paramOffset: 7,
+        topicId: '0766935267d9cf1634d5054b1a7edbdd',
+        topicName: '#测试#',
+        wordLength: 6 },
+      {
+        paramOffset: 13,
+        topicId: '12',
+        topicName: '⬇️阿萨德',
+        wordLength: 7
+      }] },
     { type: 'IMAGE', url: 'http://img.allhistory.com/5e8c2adf9b11d2028b89c006.jpg', height: 600, width: 960, text: null },
     { type: 'TEXT', text: 'asd', style: 'CONTENT' },
     { type: 'VIDEO', url: 'https://video.allhistory.com/5e8c2ae79b11d2028b89c007.mp4', text: null },
@@ -81,3 +96,21 @@ document.querySelector('#setData').addEventListener('click', () => {
 //   var textNode = document.createTextNode('123')
 //   selection.insertNode(textNode)
 // }, 5000)
+const postTags = [{
+  paramOffset: 7,
+  topicId: '0766935267d9cf1634d5054b1a7edbdd',
+  topicName: '#测试#',
+  wordLength: 6 },
+{
+  paramOffset: 13,
+  topicId: '0766935267d9cf1634d5054b1a7edbdd',
+  topicName: '⬇️阿萨德',
+  wordLength: 7
+}]
+let text = 'asdasd ##测试###⬇️阿萨德# '
+let newText = ''
+postTags.forEach(topic => {
+  const a = `<a class='topic' topic-id="${topic.topicId}">${text.substr(topic.paramOffset, topic.wordLength)}</a>`
+  newText = text.substr(0, topic.paramOffset) + a + text.substr(topic.paramOffset + topic.wordLength)
+  console.log(newText)
+})

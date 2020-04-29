@@ -3,14 +3,16 @@ import imagePlugin from './image'
 import videoPlugin from './video'
 import stylePlugin from './style'
 // import ulPlugin from './ul'
+import topicPlugin from './topic'
 import ulPlugin from './list'
 import xss from 'xss'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul'],
+      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic'],
       plugins: [],
+      topicArr: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       basePlugins: [{
@@ -60,6 +62,13 @@ export default class MEditor {
         params: {
           type: 'refer',
           label: '插入引用'
+        }
+      }, {
+        constructor: topicPlugin,
+        name: 'topic',
+        params: {
+          url: '/api/toppost/tag/search',
+          label: '插入话题'
         }
       }],
       minHeight: 200,
@@ -543,35 +552,10 @@ export default class MEditor {
       return []
     }
     Array.from(nodes).forEach(node => {
-      // if (node.nodeName === '#text') {
-      //   node.data && this.dataOutput.push({
-      //     type: 'TEXT',
-      //     text: node.data,
-      //     style: 'CONTENT'
-      //   })
-      // } else if (node.nodeName == 'BR' || (node.nodeName == 'P' && node.innerHTML === '')) {
-      //   this.dataOutput.push({
-      //     type: 'TEXT',
-      //     text: ''
-      //   })
-      // } else {
-      //   let flag = false
-      //   this.basePlugins.forEach(plugin => {
-      //     if (plugin.output(node)) {
-      //       flag = true
-      //       this.dataOutput.push(plugin.output(node))
-      //     }
-      //   })
-      //   if (!flag) {
-      //     this._getData(node.childNodes)
-      //   }
-      // }
-
       if (node.classList && node.classList.contains('m-editor-block')) {
         if (node.classList.contains('dls-video-box')) {
           let video = node.querySelector('video')
           let src = video.src
-          // let thumb = 'https:' + video.getAttribute('thumb')
           const txt = node.querySelector('.dls-video-capture')
           if (src.indexOf('http:') === 0) {
             src = src.replace('http:', 'https:')
@@ -581,13 +565,10 @@ export default class MEditor {
             type: 'VIDEO',
             url: src,
             text: txt.innerText
-            // duration: video.duration,
-            // thumb
           })
         } else {
           const img = node.querySelector('img')
           const txt = node.querySelector('.dls-image-capture')
-          console.dir(img)
           this.dataOutput.push({
             type: 'IMAGE',
             url: img.getAttribute('data-src'),
@@ -597,7 +578,13 @@ export default class MEditor {
           })
         }
       } else if (node.nodeName === '#text') {
-        let name, style, map
+        let name, style
+        let map = {}
+        if (node.nextSibling && node.nextSibling.tagName === 'A') {
+          this.content = this.content + node.data
+          return
+        }
+        if (node.parentNode.nodeName === 'A') return
         if (node.parentNode.nodeName === 'P') {
           name = node.parentNode.className
           map = {
@@ -614,22 +601,38 @@ export default class MEditor {
           }
         }
         style = map[name] || 'CONTENT'
+        const postTags = []
+        const text = this.content + node.data
+        if (this.topicArr.length) {
+          this.topicArr.forEach(element => {
+            postTags.push({
+              topicId: element.id,
+              topicName: element.name.replace(/^#|#$/g, ''),
+              wordLength: element.name.length,
+              paramOffset: text.indexOf(element.name)
+            })
+          })
+        }
         if (style === 'OL' || style === 'UL') {
           const ul = node.parentNode.parentNode
           const li = ul.querySelectorAll('li')
           node.data && this.dataOutput.push({
             style,
-            text: node.data,
+            text,
+            postTags,
             index: Array.from(li).findIndex(li => li === node.parentNode) + 1,
             type: 'TEXT'
           })
         } else {
           node.data && this.dataOutput.push({
             type: 'TEXT',
-            text: node.data,
+            text,
+            postTags,
             style
           })
         }
+        this.content = ''
+        this.topicArr = []
       } else if (node.nodeName == 'BR') {
         let nodeName = node.parentNode.parentNode.nodeName
         if (nodeName === 'UL' || nodeName === 'OL') {
@@ -658,6 +661,12 @@ export default class MEditor {
           text: '',
           style: 'CONTENT'
         })
+      } else if (node.nodeName === 'A') {
+        this.content = this.content + node.text
+        this.topicArr.push({
+          id: node.getAttribute('topic-id'),
+          name: node.text
+        })
       } else {
         this._getData(node.childNodes)
       }
@@ -684,15 +693,39 @@ export default class MEditor {
   innerText () {
     return this.contentContainer.innerText
   }
+  dealTopic (text, postTags) {
+    let arr = []
+    let start = 0
+    let processedArr = []
+    let finalStr = ''
+    postTags.map(item => {
+      arr.push(text.substring(start, item.paramOffset))
+      arr.push({ text: text.substring(item.paramOffset, item.paramOffset + item.wordLength), id: item.topicId })
+      start = item.paramOffset + item.wordLength
+    })
+    arr.push(text.substring(start, text.length))
+    arr.map((node, index) => {
+      if (index % 2 !== 0) {
+        node = `<a class="topic" topic-id="${node.id}">${node.text}</a>`
+      }
+      processedArr.push(node)
+    })
+    finalStr = processedArr.join('')
+    return finalStr
+  }
   _dataMap (data, dataArray, index) {
+    let text = data.text
+    if (data.postTags && data.postTags.length) {
+      text = this.dealTopic(text, data.postTags)
+    }
     const dataMap = {
-      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img data-src=${data.url} src=${data.url} /><p class="dls-image-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
-      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video data-src=${data.url} controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${data.text ? data.text : ''}</p></div>`,
+      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img data-src=${data.url} src=${data.url} /><p class="dls-image-capture" contenteditable="true">${text || ''}</p></div>`,
+      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video data-src=${data.url} controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${text || ''}</p></div>`,
       TEXT: {
-        CONTENT: `<p>${data.text}</p>`,
-        H1: `<p class="h1">${data.text}</p>`,
-        H2: `<p class="h2">${data.text}</p>`,
-        REFER: `<p class="refer">${data.text}</p>`
+        CONTENT: `<p>${text}</p>`,
+        H1: `<p class="h1">${text}</p>`,
+        H2: `<p class="h2">${text}</p>`,
+        REFER: `<p class="refer">${text}</p>`
       }
     }
     if (data.type === 'TEXT') {
@@ -719,6 +752,9 @@ export default class MEditor {
       content += this._dataMap(data, dataArray, index)
     })
     this.contentContainer.innerHTML = content
+    this.contentContainer.querySelectorAll('a.topic').forEach(node => {
+      node.style['-webkit-user-modify'] = 'read-only'
+    })
   }
   insertAfter (newElement, targetElement) {
     var parent = targetElement.parentNode

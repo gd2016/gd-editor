@@ -1,0 +1,41 @@
+.pop-box-mask{
+  position: fixed;
+  left: 0;
+  top:0;
+  right:0;
+  bottom:0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1004;
+  overflow: auto;
+  .pop-content{
+    background: white;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.14);
+    padding: 50px;
+    animation-duration: .3s;
+    animation-fill-mode: both;
+    animation-name: popBoxZoomIn;
+  }
+
+  .box-title{
+    margin: 20px; 	font-size: 16px;
+  }
+
+  .fixed-header{
+    background-attachment: white;
+  }
+}
+
+
+@keyframes popBoxZoomIn {
+  from {
+    opacity: 0;
+    transform: scale3d(.7, .7, .7);
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
