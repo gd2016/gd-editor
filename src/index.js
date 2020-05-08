@@ -75,6 +75,7 @@ export default class MEditor {
       minHeight: 200,
       maxHeight: 400000,
       content: '',
+      topicContent: '',
       host: '__ALLHISTORY_HOSTNAME__',
       dataOutput: [],
       onReady (editor) {}
@@ -582,7 +583,7 @@ export default class MEditor {
         let name, style
         let map = {}
         if (node.nextSibling && node.nextSibling.tagName === 'A') {
-          this.content = this.content + node.data
+          this.topicContent = this.topicContent + node.data
           return
         }
         if (node.parentNode.nodeName === 'A') return
@@ -603,7 +604,8 @@ export default class MEditor {
         }
         style = map[name] || 'CONTENT'
         const postTags = []
-        const text = this.content + node.data
+
+        const text = this.topicContent + node.data
         if (this.topicArr.length) {
           this.topicArr.forEach(element => {
             postTags.push({
@@ -632,7 +634,7 @@ export default class MEditor {
             style
           })
         }
-        this.content = ''
+        this.topicContent = ''
         this.topicArr = []
       } else if (node.nodeName == 'BR') {
         let nodeName = node.parentNode.parentNode.nodeName
@@ -663,7 +665,7 @@ export default class MEditor {
           style: 'CONTENT'
         })
       } else if (node.nodeName === 'A') {
-        this.content = this.content + node.text
+        this.topicContent = this.topicContent + node.text
         this.topicArr.push({
           id: node.getAttribute('topic-id'),
           name: node.text

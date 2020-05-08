@@ -77,7 +77,7 @@ document.querySelector('#setData').addEventListener('click', () => {
     { type: 'TEXT', text: 'asd', style: 'CONTENT' },
     { type: 'VIDEO', url: 'https://video.allhistory.com/5e8c2ae79b11d2028b89c007.mp4', text: null },
     { type: 'TEXT', text: null, style: 'H1' },
-    { type: 'TEXT', text: '121', style: 'H2' },
+    { type: 'TEXT', text: '1\n121221', style: 'H2' },
     { type: 'TEXT', text: '12', style: 'REFER' },
     { type: 'TEXT', text: '1212', style: 'REFER' },
     { style: 'OL', text: '1212', index: 1, type: 'TEXT' },
