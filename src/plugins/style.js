@@ -33,6 +33,8 @@ export default class Style {
 
           if (rang.endContainer.parentNode.className) {
             rang.deleteContents()
+            console.log(this.editor)
+
             this.editor.insertAfter(p, rang.endContainer.parentNode)
             // rang.endContainer.parentNode.parentNode.insertBefore(p, rang.endContainer.parentNode.nextSibling) // 在选中文档的节点后加入新节点
           } else {
@@ -56,12 +58,7 @@ export default class Style {
     this.onoff = !this.editor.updateToolbarStatus(this.type)
     if (this.onoff) {
       if (selectNode.nodeName === '#text' && selectNode.parentNode.nodeName === 'P') { // 父节点添加type
-        // const txt = selectNode.data
-        // const p = document.createElement('p')
-        // p.innerHTML = txt
         this._setClass(selectNode.parentNode, this.type)
-        // selectNode.parentNode.replaceChild(p, selectNode)
-        // this.editor._setRange(p)
         this.editor.updateTool(true, { className: this.type })
       } else if (selectNode.nodeName === 'P') { // 只针对p标签，li标签return
         this._setClass(selectNode, this.type)
