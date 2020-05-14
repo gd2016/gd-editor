@@ -52,7 +52,7 @@ document.querySelector('#getData').addEventListener('click', () => {
       str += `${item.url}<br/>capture: ${item.text} <br/><hr/>`
     }
   })
-  console.log(editor.getData())
+  console.log(editor.getData(), JSON.stringify(editor.getData()))
 
   document.querySelector('.content').innerHTML = str
 })

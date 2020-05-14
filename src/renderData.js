@@ -1,4 +1,7 @@
 import { dealTopic } from './untils/topic'
+export {
+  renderText
+}
 export default function (data, option = {}) {
   if (!option.handleText) {
     option.handleText = (text) => text
@@ -26,5 +29,25 @@ export default function (data, option = {}) {
     }
   })
   html += '</div>'
+  return html
+}
+
+function renderText (data, option = {}) {
+  if (!option.handleText) {
+    option.handleText = (text) => text
+  }
+  let html = ''
+  const f = ['。', '，', '.', ',']
+  data.forEach(item => {
+    if (item.type === 'TEXT' && item.style === 'CONTENT' && item.text) {
+      const last = html.charAt(html.length - 1)
+      if (f.indexOf(last) !== -1) {
+        html += `${option.handleText(item.text)}`
+      } else {
+        html += `${option.handleText(item.text)}，`
+      }
+    }
+  })
+  html = html.substring(0, html.length - 1)
   return html
 }
