@@ -23,6 +23,7 @@ export default class List {
     } else {
       document.execCommand('insertOrderedList')
     }
+    this.editor.updateTool(true, { className: this.name })
     this.editor._getSelection()
     onoff && icon.classList.remove('active')
     !onoff && icon.classList.add('active')
