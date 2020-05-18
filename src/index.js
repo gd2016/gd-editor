@@ -716,7 +716,7 @@ export default class MEditor {
         const next = dataArray[index + 1]
         if (data.index === 1) {
           return `<${data.style.toLowerCase()}><li>${data.text}</li>`
-        } else if ((next.style != 'OL' && next.style != 'UL') || next.index == 1) {
+        } else if (!next || (next.style != 'OL' && next.style != 'UL') || next.index == 1) {
           return `<li>${data.text}</li></${data.style.toLowerCase()}>`
         } else {
           return `<li>${data.text}</li>`
