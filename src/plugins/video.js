@@ -28,15 +28,19 @@ export default class img {
   }
   initCommand () {
     // return this.editor.insertHtml(template({ src: '//video.allhistory.com/5e1bde079b11d23010573833.mp4' }))
-    const file = document.createElement('input')
-    const self = this
-    file.name = this.name
-    file.type = 'file'
-    file.multiple = true
-    file.accept = '.mp4'
-    file.click()
-    file.onchange = function (e) {
-      self._upload(this.files)
+    if (!this.file) {
+      const self = this
+      this.file = document.createElement('input')
+      this.file.name = this.name
+      this.file.type = 'file'
+      this.file.multiple = true
+      this.file.accept = '.mp4'
+      this.file.click()
+      this.file.onchange = function (e) {
+        self._upload(this.files)
+      }
+    } else {
+      this.file.click()
     }
   }
   _upload (files) {
@@ -67,9 +71,13 @@ export default class img {
           this[file.name + index].parentNode.removeChild(this[file.name + index])
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
+        this[file.name + index] = ''
       }).catch(err => {
         new Alert({ type: 'error', text: `上传失败${err.status}`, position: 'top-center' })
         this[file.name + index].parentNode.removeChild(this[file.name + index])
+        this[file.name + index] = ''
+      }).finally(() => {
+        this.file.value = ''
       })
     })
   }

@@ -56,15 +56,19 @@ export default class img {
   }
   initCommand () {
     // return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
-    const file = document.createElement('input')
-    const self = this
-    file.name = this.name
-    file.type = 'file'
-    file.multiple = true
-    file.accept = '.jpg,.jpeg,.png,.gif'
-    file.click()
-    file.onchange = function (e) {
-      self._upload(this.files)
+    if (!this.file) {
+      const self = this
+      this.file = document.createElement('input')
+      this.file.name = this.name
+      this.file.type = 'file'
+      this.file.multiple = true
+      this.file.accept = '.jpg,.jpeg,.png,.gif'
+      this.file.click()
+      this.file.onchange = function (e) {
+        self._upload(this.files)
+      }
+    } else {
+      this.file.click()
     }
   }
   _upload (files) {
@@ -81,17 +85,23 @@ export default class img {
           this[file.name + index].prepend(img)
           img.onload = () => {
             this[file.name + index].classList.remove('loading')
+            this[file.name + index] = ''
           }
           img.onerror = () => {
             this[file.name + index].classList.remove('loading')
+            this[file.name + index] = ''
           }
         } else {
           this[file.name + index].parentNode.removeChild(this[file.name + index])
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
+          this[file.name + index] = ''
         }
       }).catch(err => {
         new Alert({ type: 'error', text: `上传失败${err.status}`, position: 'top-center' })
         this[file.name + index].parentNode.removeChild(this[file.name + index])
+        this[file.name + index] = ''
+      }).finally(() => {
+        this.file.value = ''
       })
     })
   }
