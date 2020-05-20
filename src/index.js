@@ -6,13 +6,15 @@ import stylePlugin from './plugins/style'
 import topicPlugin from './plugins/topic'
 import ulPlugin from './plugins/list'
 import xss from 'xss'
+import linkPlugin from './plugins/link'
 import { dealTopic } from './untils/topic'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic'],
+      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
       plugins: [],
+      linkArr: [],
       topicArr: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
@@ -70,6 +72,13 @@ export default class MEditor {
         params: {
           url: '/api/toppost/tag/search',
           label: '插入话题'
+        }
+      }, {
+        constructor: linkPlugin,
+        name: 'link',
+        params: {
+          url: '/api/search/getSuggestion',
+          label: '插入链接'
         }
       }],
       minHeight: 200,
@@ -147,7 +156,6 @@ export default class MEditor {
     } else {
       node = domStr
     }
-    console.log(node)
     if (!this.selection) { // 没有聚焦时进行的插入操作
       this.contentContainer.appendChild(node)
       return node
@@ -540,6 +548,7 @@ export default class MEditor {
 
   getData () {
     this.dataOutput = []
+    this.linkArr = []
     return this._getData(this.contentContainer.childNodes)
   }
 
@@ -555,109 +564,11 @@ export default class MEditor {
     }
     Array.from(nodes).forEach(node => {
       if (node.classList && node.classList.contains('m-editor-block')) {
-        if (node.classList.contains('dls-video-box')) {
-          let video = node.querySelector('video')
-          let src = video.src
-          const txt = node.querySelector('.dls-video-capture')
-          if (src.indexOf('http:') === 0) {
-            src = src.replace('http:', 'https:')
-          }
-
-          this.dataOutput.push({
-            type: 'VIDEO',
-            url: src,
-            text: txt.innerText
-          })
-        } else {
-          const img = node.querySelector('img')
-          const txt = node.querySelector('.dls-image-capture')
-          this.dataOutput.push({
-            type: 'IMAGE',
-            url: img.getAttribute('data-src'),
-            height: img.naturalHeight,
-            width: img.naturalWidth,
-            text: txt.innerText
-          })
-        }
+        this._handleBlock(node)
       } else if (node.nodeName === '#text') {
-        let name, style
-        let map = {}
-        if (node.nextSibling && node.nextSibling.tagName === 'A') {
-          this.topicContent = this.topicContent + node.data
-          return
-        }
-        if (node.parentNode.nodeName === 'A') return
-        if (node.parentNode.nodeName === 'P') {
-          name = node.parentNode.className
-          map = {
-            h1: 'H1',
-            h2: 'H2',
-            refer: 'REFER'
-          }
-        }
-        if (node.parentNode.nodeName === 'LI') {
-          name = node.parentNode.parentNode.nodeName.toLowerCase()
-          map = {
-            ul: 'UL',
-            ol: 'OL'
-          }
-        }
-        style = map[name] || 'CONTENT'
-        const postTags = []
-
-        const text = this.topicContent + node.data
-        if (this.topicArr.length) {
-          this.topicArr.forEach(element => {
-            postTags.push({
-              topicId: element.id,
-              topicName: element.name.replace(/^#|#$/g, ''),
-              wordLength: element.name.length,
-              paramOffset: text.indexOf(element.name)
-            })
-          })
-        }
-        if (style === 'OL' || style === 'UL') {
-          const ul = node.parentNode.parentNode
-          const li = ul.querySelectorAll('li')
-          node.data && this.dataOutput.push({
-            style,
-            text,
-            postTags,
-            index: Array.from(li).findIndex(li => li === node.parentNode) + 1,
-            type: 'TEXT'
-          })
-        } else {
-          node.data && this.dataOutput.push({
-            type: 'TEXT',
-            text,
-            postTags,
-            style
-          })
-        }
-        this.topicContent = ''
-        this.topicArr = []
+        this._handleText(node)
       } else if (node.nodeName == 'BR') {
-        let nodeName = node.parentNode.parentNode.nodeName
-        if (nodeName === 'UL' || nodeName === 'OL') {
-          const ul = node.parentNode.parentNode
-          const li = ul.querySelectorAll('li')
-          this.dataOutput.push({
-            style: nodeName,
-            text: '',
-            index: (nodeName === 'OL' || nodeName === 'UL') && Array.from(li).findIndex(li => li === node.parentNode) + 1,
-            type: 'TEXT'
-          })
-        } else if (node.previousSibling && node.previousSibling.nodeName === '#text') {
-
-        } else if (node.nextSibling && node.nextSibling.nodeName === '#text') {
-
-        } else {
-          this.dataOutput.push({
-            type: 'TEXT',
-            text: '',
-            style: 'CONTENT'
-          })
-        }
+        this._handleBr(node)
       } else if (node.nodeName == 'P' && node.innerHTML === '') {
         this.dataOutput.push({
           type: 'TEXT',
@@ -665,17 +576,160 @@ export default class MEditor {
           style: 'CONTENT'
         })
       } else if (node.nodeName === 'A') {
-        this.topicContent = this.topicContent + node.text
-        this.topicArr.push({
-          id: node.getAttribute('topic-id'),
-          name: node.text
-        })
+        this._handleTagA(node)
+        if (!node.nextSibling) {
+          this._handleText(node, true)
+        } else {
+          this.topicContent = this.topicContent + node.text
+        }
       } else {
         this._getData(node.childNodes)
       }
     })
 
     return this.dataOutput
+  }
+  /**
+   * @function 处理块（图片，视频）
+   * @param 节点
+   */
+  _handleBlock (node) {
+    if (node.classList.contains('dls-video-box')) {
+      let video = node.querySelector('video')
+      let src = video.src
+      const txt = node.querySelector('.dls-video-capture')
+      if (src.indexOf('http:') === 0) {
+        src = src.replace('http:', 'https:')
+      }
+
+      this.dataOutput.push({
+        type: 'VIDEO',
+        url: src,
+        text: txt.innerText
+      })
+    } else {
+      const img = node.querySelector('img')
+      const txt = node.querySelector('.dls-image-capture')
+      this.dataOutput.push({
+        type: 'IMAGE',
+        url: img.getAttribute('data-src'),
+        height: img.naturalHeight,
+        width: img.naturalWidth,
+        text: txt.innerText
+      })
+    }
+  }
+  /**
+   * @function 处理文本
+   * @param  {node} 节点
+   * @param  {boolean} 节点是否为A,获取a的文本用node.text,文本节点获取用node.data
+   */
+  _handleText (node, isA) {
+    let name, style
+    let map = {}
+    if (node.nextSibling && node.nextSibling.tagName === 'A') { // 如果后面有a标签，只加内容但是不添加到content
+      this.topicContent = this.topicContent + (isA ? node.text : node.data)
+      return
+    }
+    if (node.parentNode.nodeName === 'A') return // 如果是A标签就跳过，因为已经对a标签做了处理
+    if (node.parentNode.nodeName === 'P') {
+      name = node.parentNode.className
+      map = {
+        h1: 'H1',
+        h2: 'H2',
+        refer: 'REFER'
+      }
+    }
+    if (node.parentNode.nodeName === 'LI') {
+      name = node.parentNode.parentNode.nodeName.toLowerCase()
+      map = {
+        ul: 'UL',
+        ol: 'OL'
+      }
+    }
+    style = map[name] || 'CONTENT'
+    const postTags = [] // 话题标签
+    const txt = isA ? node.text : node.data
+    const text = this.topicContent + txt
+    this.topicArr.length && this.topicArr.forEach(element => {
+      postTags.push({
+        topicId: element.id,
+        topicName: element.name.replace(/^#|#$/g, ''),
+        wordLength: element.name.length,
+        paramOffset: element.paramOffset
+      })
+    })
+
+    if (style === 'OL' || style === 'UL') {
+      const ul = node.parentNode.parentNode
+      const li = ul.querySelectorAll('li')
+      txt && this.dataOutput.push({
+        style,
+        text,
+        postTags,
+        index: Array.from(li).findIndex(li => li === node.parentNode) + 1,
+        type: 'TEXT'
+      })
+    } else {
+      txt && this.dataOutput.push({
+        type: 'TEXT',
+        text,
+        postTags,
+        style
+      })
+    }
+    this.topicContent = ''
+    this.topicArr = []
+  }
+  /**
+   * @function 处理a标签
+   * @param  {node} 节点
+   */
+  _handleTagA (node) {
+    if (node.className == 'topic') { // 话题a标签
+      this.topicArr.push({
+        id: node.getAttribute('topic-id'),
+        name: node.text,
+        paramOffset: this.topicContent.length
+      })
+    } else if (node.className == 'link') { // 内链的情况
+      this.linkArr.push({
+        word: node.text,
+        itemId: node.getAttribute('item-id'),
+        contentOffset: this.dataOutput.length,
+        paramOffset: this.topicContent.length,
+        wordLength: node.text.length
+      })
+    }
+  }
+  /**
+   * @function 处理br标签
+   * @param  {node} 节点
+   */
+  _handleBr (node) {
+    let nodeName = node.parentNode.parentNode.nodeName
+    if (nodeName === 'UL' || nodeName === 'OL') {
+      const ul = node.parentNode.parentNode
+      const li = ul.querySelectorAll('li')
+      this.dataOutput.push({
+        style: nodeName,
+        text: '',
+        index: (nodeName === 'OL' || nodeName === 'UL') && Array.from(li).findIndex(li => li === node.parentNode) + 1,
+        type: 'TEXT'
+      })
+    } else if (node.previousSibling && node.previousSibling.nodeName === '#text') {
+      // br混在文本节点前面的情况
+    } else if (node.nextSibling && node.nextSibling.nodeName === '#text') {
+      // br混在文本节点后面的情况
+    } else if (node.nextSibling && node.nextSibling.nodeName === 'A') {
+      // 添加内链的时候会混一个br节点
+    } else {
+      this.dataOutput.push({
+        type: 'TEXT',
+        text: '',
+        style: 'CONTENT'
+      })
+    }
   }
   getLength (onlyText) {
     let length = 0
@@ -728,14 +782,32 @@ export default class MEditor {
       return dataMap[data.type]
     }
   }
-  setData (dataArray) {
+  setData (dataArray, innerLinks) {
     let content = ''
-
+    if (innerLinks && innerLinks.length) {
+      let contentOffset = -1
+      let replaceArr = []
+      const replaceFn = (link) => {
+        return `<a class="link" item-id="${link.itemId}">${link.word}</a>`
+      }
+      innerLinks.forEach((link, index) => {
+        if (link.contentOffset != contentOffset && contentOffset != -1) {
+          dataArray[contentOffset].text = dealTopic(dataArray[contentOffset].text, replaceArr, replaceFn)
+          replaceArr = [link]
+        } else {
+          replaceArr.push(link)
+        }
+        contentOffset = link.contentOffset
+      })
+      if (contentOffset !== -1) {
+        dataArray[contentOffset].text = dealTopic(dataArray[contentOffset].text, replaceArr, replaceFn)
+      }
+    }
     dataArray.forEach((data, index) => {
       content += this._dataMap(data, dataArray, index)
     })
     this.contentContainer.innerHTML = content
-    this.contentContainer.querySelectorAll('a.topic').forEach(node => {
+    this.contentContainer.querySelectorAll('a').forEach(node => {
       node.style['-webkit-user-modify'] = 'read-only'
     })
   }

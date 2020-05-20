@@ -19,11 +19,49 @@
 | minHeight |   200   |  最小高度  |
 | maxHeight |   400000   |  最大高度  |
 | content |   ''   |  默认内容  |
-| imgHost |   '//pic.evatlas.com'   |  图片host地址  |
 | host |   '__ALLHISTORY_HOSTNAME__'   |  图片上传接口host  |
-| url |   '/api/image/upload'   |  图片上传地址  |
-| formName |   'userfile'   |   图片上传字段 |
 | onReady |  (editor){}   | 编辑器初始化回调   |
+| maxlength | 0 | 字数限制，前端只做提示，没有限制提交 |
+
+
+## renderData  renderText
+
+```javascript
+import renderData from '@portal/dls-m-editor/src/renderData'
+import { renderText } from '@portal/dls-m-editor/src/renderData'
+
+const data = [
+  { type: 'TEXT', text: 'asdasd ##测试###⬇️阿萨德# ', style: 'CONTENT' },
+  { type: 'IMAGE', url: 'http://img.allhistory.com/5e8c2adf9b11d2028b89c006.jpg', height: 600, width: 960, text: '123' },
+  { type: 'TEXT', text: 'asd', style: 'CONTENT' },
+  { style: 'OL', text: '1212', index: 1, type: 'TEXT' },
+  { type: 'TEXT', text: '121121', index: 2, style: 'UL' },
+  { type: 'TEXT', text: '2', index: 3, style: 'UL' },
+  { type: 'TEXT', text: '12', style: 'REFER' }
+]
+const innerLinks = [{
+  word: 'asd',
+  itemId: 'asdadasde234231k',
+  contentOffset: 0,
+  paramOffset: 3,
+  wordLength: 3
+}]
+
+let html = renderData(data, {
+  innerLinks,
+  replaceFn: (link: innerLinks) => {
+      return `<a href="/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
+    },
+  handleText: (text: data[].text) => text
+})
+document.querySelector('.content').innerHTML = html
+
+let text = renderText(data,{
+  handleText: (text: data[].text) => text
+})
+document.querySelector('.content').innerText = text
+
+```
 
 
 ### Usage

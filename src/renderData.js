@@ -2,12 +2,17 @@ import { dealTopic } from './untils/topic'
 export {
   renderText
 }
-export default function (data, option = {}) {
-  if (!option.handleText) {
-    option.handleText = (text) => text
-  }
+export default function (data, option) {
+  option = Object.assign({
+    replaceFn: (link) => {
+      return `<a href="/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
+    },
+    handleText: (text) => text,
+    innerLinks: []
+  }, option)
+  const newData = handleA(data, option.innerLinks, option.replaceFn)
   let html = '<div class="community-box">'
-  data.forEach(item => {
+  newData.forEach(item => {
     if (item.type === 'TEXT') {
       html += `<p><span index="${item.index}" class="${item.style ? item.style.toLowerCase() : ''}">${dealTopic(option.handleText(item.text), item.postTags)}</span></p>`
     }
@@ -32,6 +37,32 @@ export default function (data, option = {}) {
   return html
 }
 
+function handleA (data, innerLinks, replaceFn) {
+  const newData = Array.from(data)
+  if (innerLinks && innerLinks.length) {
+    let contentOffset = -1
+    let replaceArr = []
+    innerLinks.forEach(link => {
+      if (link.contentOffset != contentOffset && contentOffset != -1) {
+        newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
+        replaceArr = [link]
+      } else {
+        replaceArr.push(link)
+      }
+      contentOffset = link.contentOffset
+    })
+    if (contentOffset !== -1) {
+      newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
+    }
+  }
+  return newData
+}
+/**
+ * @function renderText
+ * @param  {Array} data   数据
+ * @param  {Object} option 其他配置，目前只有处理文本的方法
+ * @return {html}
+ */
 function renderText (data, option = {}) {
   if (!option.handleText) {
     option.handleText = (text) => text

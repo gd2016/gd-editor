@@ -49,7 +49,7 @@ export default class Topic {
           var sel = window.getSelection()
           sel.removeAllRanges()
           sel.addRange(range)
-          document.execCommand('insertHTML', false, ` <a class="topic" topic-id="${this.topicId}">${this.name}</a> `)
+          document.execCommand('insertHTML', false, `<a class="topic" topic-id="${this.topicId}">${this.name}</a>`)
         }
         $('a.topic').css({ '-webkit-user-modify': 'read-only' })
         this.pop.close()

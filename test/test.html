@@ -35,6 +35,9 @@
   .dls-topic-icon{
     background: url('../static/topic.png');
   }
+  .dls-link-icon{
+    background: url('../static/link.svg');
+  }
   .loading{
     background-image: url('../static/lazyloadImg.svg');
   }
@@ -46,10 +49,23 @@
   .content{
     white-space:pre-wrap;
     display: inline-block;
-    width: 500px
+    width: 350px
+  }
+  .content img{
+    width: 100%;
   }
   .show-content{
     margin-left: 100px;
+  }
+  .icon.icon-edit{
+    background-image: url('../static/link.svg');
+  }
+  .icon.icon-delete-x{
+    background-image: url('../static/video.svg');
+  }
+  .icon{
+    display: inline-block;
+    background-size: 100%;
   }
 </style>
 <body>
@@ -58,10 +74,10 @@
     <div id="editor-area"></div>
     <button id="getData">获取内容</button>
     <button id="setData">设置内容</button>
-    <button id="showData">显示内容</button>
+    <!-- <button id="showData">显示内容</button> -->
     <div class="clearfix">
       <div class="content" ></div>
-      <div class="content show-content" ></div>
+      <!-- <div class="content show-content" ></div> -->
     </div>
     
     

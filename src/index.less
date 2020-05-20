@@ -247,3 +247,62 @@
       margin-right: 5px;
     }
 }
+.dls-editor-lite-edit-link,.dls-editor-across-edit-link {
+  z-index: 51;// 正文编辑，右侧拖动图标的z-index 为50,防止被覆盖，故这里设置为51 2019-1-21 14:00
+  position: fixed;
+  height: 30px;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.14);
+  border-radius: 2px;
+  border: 1px solid rgba(222, 222, 222, 1);
+  padding: 0 12px;
+  z-index: 5;
+  .link-value{
+    display: inline-block;
+    max-width: 240px;
+    overflow: hidden;
+    margin-right: 10px;
+    text-overflow: ellipsis;
+    margin-top: 6px;
+    white-space: nowrap;
+  }
+  input {
+    line-height: 24px;
+    height: 24px;
+    margin-top:3px;
+    width: 240px;
+  }
+  .icon {
+    width: 10px;
+    cursor: pointer;
+    height: 10px;
+    margin-bottom: 3px;
+    margin-right : 5px;
+  }
+  
+  &:after {
+    content: '';
+    display: block;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px;
+    border-bottom-color: #fff;
+    margin-left: -5px;
+    position: absolute;
+    top: -10px;
+    left: 50%;
+  }
+
+  &:before {
+    content: '';
+    display: block;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px;
+    border-bottom-color: rgba(222, 222, 222, 1);
+    margin-left: -5px;
+    position: absolute;
+    top: -11px;
+    left: 50%;
+  }
+}
