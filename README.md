@@ -24,11 +24,22 @@
 | maxlength | 0 | 字数限制，前端只做提示，没有限制提交 |
 
 
+## Method
+
+| name     | params | return | description        |
+| -------- | ------ | ------ | ------------------ |
+| getLength |  是否是包括纯文本，不包含图片、视频等(Boolean)   | 长度     | 获取 editor 的内容长度 |
+| setData |   dataArray，innerLinks  |       | 设置editor 的内容（数据，内链） |
+| getData |     |    | 获取editor的内容  |    
+| getLink |     |    | 获取editor内链            |    
+| insertHtml |  html字符串  |  该节点  | 插入editor节点 | 
+
+
 ## renderData  renderText
 
 ```javascript
-import renderData from '@portal/dls-m-editor/src/renderData'
-import { renderText } from '@portal/dls-m-editor/src/renderData'
+import renderData from '@portal/dls-m-editor/src/renderData' //渲染数据
+import { renderText } from '@portal/dls-m-editor/src/renderData' //渲染纯文本，逗号隔开。不渲染H1,H2,图片等非文本
 
 const data = [
   { type: 'TEXT', text: 'asdasd ##测试###⬇️阿萨德# ', style: 'CONTENT' },
@@ -39,20 +50,20 @@ const data = [
   { type: 'TEXT', text: '2', index: 3, style: 'UL' },
   { type: 'TEXT', text: '12', style: 'REFER' }
 ]
-const innerLinks = [{
+const innerLinks = [{ //内链字段
   word: 'asd',
-  itemId: 'asdadasde234231k',
-  contentOffset: 0,
-  paramOffset: 3,
-  wordLength: 3
+  itemId: 'asdadasde234231k', //一般是 词条的id，或者一个url链接到其他
+  contentOffset: 0, //data偏移量，一般是data的第几段
+  paramOffset: 3, //在data某一段的偏移量
+  wordLength: 3 //word长度
 }]
 
 let html = renderData(data, {
   innerLinks,
-  replaceFn: (link: innerLinks) => {
+  replaceFn: (link: innerLinks) => { //内链替换规则
       return `<a href="/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
     },
-  handleText: (text: data[].text) => text
+  handleText: (text: data[].text) => text //对data每段text的额外处理，加xss等可以在这里进行
 })
 document.querySelector('.content').innerHTML = html
 

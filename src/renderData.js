@@ -14,7 +14,8 @@ export default function (data, option) {
   let html = '<div class="community-box">'
   newData.forEach(item => {
     if (item.type === 'TEXT') {
-      html += `<p><span index="${item.index}" class="${item.style ? item.style.toLowerCase() : ''}">${dealTopic(option.handleText(item.text), item.postTags)}</span></p>`
+      const index = item.index && `index="${item.index}"`
+      html += `<p><span ${index || ''} class="${item.style ? item.style.toLowerCase() : ''}">${dealTopic(option.handleText(item.text), item.postTags)}</span></p>`
     }
     if (item.type === 'IMAGE') {
       html += `<div class="img-box"><img src=${item.url} />`

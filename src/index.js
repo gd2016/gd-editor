@@ -14,8 +14,6 @@ export default class MEditor {
       container: null,
       toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
       plugins: [],
-      linkArr: [],
-      topicArr: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       basePlugins: [{
@@ -84,11 +82,13 @@ export default class MEditor {
       minHeight: 200,
       maxHeight: 400000,
       content: '',
-      topicContent: '',
       host: '__ALLHISTORY_HOSTNAME__',
-      dataOutput: [],
       onReady (editor) {}
     }, props)
+    this.dataOutput = [] // 存储输出数据
+    this.topicContent = '' // 存储话题内容
+    this.linkArr = [] // 外链偏移量
+    this.topicArr = [] // 同 postTags 存储当前一行内容的话题偏移量
     this._init()
   }
 
@@ -552,6 +552,12 @@ export default class MEditor {
     return this._getData(this.contentContainer.childNodes)
   }
 
+  getLink () {
+    this.dataOutput = []
+    this.linkArr = []
+    this._getData(this.contentContainer.childNodes)
+    return this.linkArr
+  }
   /**
    * FIXME： 待优化，图片节点需可配置
    * 私有方法，勿外部调用
@@ -738,7 +744,7 @@ export default class MEditor {
       if (data.type === 'TEXT') {
         length += data.text.length
       }
-      if (data.type === 'IMAGE' && onlyText) {
+      if (data.type === 'IMAGE' && !onlyText) {
         length += 1
       }
     })

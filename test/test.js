@@ -21,6 +21,10 @@ document.querySelector('#getData').addEventListener('click', () => {
   $('.content').html(html)
 })
 
+document.querySelector('#getLink').addEventListener('click', () => {
+  console.log(editor.getLink())
+})
+
 document.querySelector('#setData').addEventListener('click', () => {
   const innerLinks = [{
     word: 'asd',
