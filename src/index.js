@@ -12,7 +12,7 @@ export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
+      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic'],
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
@@ -774,9 +774,12 @@ export default class MEditor {
     if (data.type === 'TEXT') {
       if (data.style === 'OL' || data.style === 'UL') {
         const next = dataArray[index + 1]
-        if (data.index === 1) {
+        if (data.index == 1) {
+          if (!next || data.style != next.style || next.index == 1) { // 只有一行ul或者ol的时候
+            return `<${data.style.toLowerCase()}><li>${data.text}</li></${data.style.toLowerCase()}>`
+          }
           return `<${data.style.toLowerCase()}><li>${data.text}</li>`
-        } else if (!next || (next.style != 'OL' && next.style != 'UL') || next.index == 1) {
+        } else if (!next || data.style != next.style || next.index == 1) {
           return `<li>${data.text}</li></${data.style.toLowerCase()}>`
         } else {
           return `<li>${data.text}</li>`
