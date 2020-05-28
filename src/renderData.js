@@ -5,7 +5,11 @@ export {
 export default function (data, option) {
   option = Object.assign({
     replaceFn: (link) => {
-      return `<a href="/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
+      if (link.itemId.indexOf('/') !== -1) {
+        return `<a href="${link.itemId}" target="_blank">${link.word}</a>`
+      } else {
+        return `<a href="/detail/${link.itemId}" target="_blank" data-id="${link.itemId}">${link.word}</a>`
+      }
     },
     handleText: (text) => text,
     innerLinks: []
