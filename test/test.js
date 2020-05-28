@@ -13,10 +13,7 @@ const editor = new test({
 
 document.querySelector('#getData').addEventListener('click', () => {
   let html = show(editor.getData(), {
-    innerLinks: editor.linkArr,
-    replaceFn: (link) => {
-      return `<a target="_blank" href="//10.4.40.168:3000/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
-    }
+    innerLinks: editor.linkArr
   })
   $('.content').html(html)
 })
@@ -28,7 +25,7 @@ document.querySelector('#getLink').addEventListener('click', () => {
 document.querySelector('#setData').addEventListener('click', () => {
   const innerLinks = [{
     word: 'asd',
-    itemId: 'asdadasde234231k',
+    itemId: '/family/subIndex?id=58018f240bd1beda25d7c186',
     contentOffset: 0,
     paramOffset: 3,
     wordLength: 3

@@ -12,7 +12,7 @@ export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic'],
+      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
@@ -82,6 +82,7 @@ export default class MEditor {
       minHeight: 200,
       maxHeight: 400000,
       content: '',
+      frameHost: '',
       host: '__ALLHISTORY_HOSTNAME__',
       onReady (editor) {}
     }, props)
@@ -118,7 +119,7 @@ export default class MEditor {
         const pluginName = this._toCamelCase(plugin.name)
         if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
           // plugin.type && plugin.constructor.setType(plugin.type)
-          this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
+          this[pluginName] = new plugin.constructor({ frameHost: this.frameHost, name: plugin.name, editor: this, host: this.host, ...plugin.params })
           this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
             this[pluginName].initCommand()
           }
