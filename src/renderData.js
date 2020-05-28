@@ -47,6 +47,7 @@ function handleA (data, innerLinks, replaceFn) {
   if (innerLinks && innerLinks.length) {
     let contentOffset = -1
     let replaceArr = []
+    innerLinks = innerLinks.sort((a, b) => a.contentOffset - b.contentOffset)
     innerLinks.forEach(link => {
       if (link.contentOffset != contentOffset && contentOffset != -1) {
         newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
