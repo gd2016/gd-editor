@@ -31,6 +31,7 @@ document.querySelector('#setData').addEventListener('click', () => {
     wordLength: 3
   }]
   editor.setData([
+    { type: 'IMAGE', text: '123', url: '//img.allhistory.com/5ed0f1ea28b210674be63c81.png' },
     { style: 'UL', text: '1212', index: '1', type: 'TEXT' },
     { type: 'TEXT', text: '121121', index: '1', style: 'OL' },
     { type: 'TEXT', text: '2', index: 3, style: 'OL' },

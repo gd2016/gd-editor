@@ -625,6 +625,24 @@ export default class MEditor {
         text: txt.innerText
       })
     }
+    const textNode = node.querySelector('.dls-image-capture') || node.querySelector('.dls-video-capture')
+    Array.from(textNode.children).forEach(link => {
+      link.classList.contains('link') && this.linkArr.push({
+        word: link.text,
+        itemId: link.getAttribute('item-id'),
+        contentOffset: this.dataOutput.length - 1,
+        paramOffset: this._getOffset(link),
+        wordLength: link.text.length
+      })
+    })
+  }
+  _getLength (node) {
+    let length = node.length
+    if (node.previousSibling) {
+      length += this._getLength(node.previousSibling)
+    } else {
+      return length
+    }
   }
   /**
    * @function 处理文本
