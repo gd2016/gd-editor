@@ -5,7 +5,7 @@
     border-bottom: 1px solid #d1d1d1;
     padding: 20px;
     word-wrap: break-word;
-    line-height: 1.9;
+    line-height: 37px;
     outline: none;
     white-space: pre-wrap;
     overflow: auto;
@@ -21,6 +21,7 @@
       border-left: 4px solid #ccc;
       padding-left: 10px;
       background: #F7F8FB;
+      margin-bottom: 5px;
     }
     ul,ol{
       margin: 0;
@@ -42,7 +43,7 @@
       padding: 0;
       font-weight: normal;
       font-size: 14px;
-      margin-bottom: 5px;
+      // margin-bottom: 5px;
     }
     .dls-video-box{
       video{
@@ -138,11 +139,18 @@
     top: 0;
     background: #ffffff;
     z-index: 2;
-    &.disable a{
-      opacity: .5;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
+    &.disable{
+      a{
+        opacity: .5;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .dls-link-icon-container{
+        opacity: 1;
+        cursor: initial;
+        pointer-events: auto;
+      }
+    } 
     .icon-container{
       padding: 3px 5px;
       display: inline-block;
@@ -181,16 +189,16 @@
 .community-box{
     margin-top: 10px;
     text-align: justify;
-    line-height: 27px;
+    line-height: 37px;
     font-size: 17px;
     word-wrap: break-word;
     white-space: pre-wrap;
+    p{
+      min-height: 28px;
+      margin: 0;
+    }
     a{
       color: #0056e7;
-    }
-    div{
-      min-height: 27px;
-      margin-bottom: 10px;
     }
     .img-box,.video-box{
       text-align: center;
@@ -218,6 +226,7 @@
       color: #6D6D6D;
       background: #F7F8FB;
       display: block;
+      margin-bottom: 5px;
     }
     .dls-image-capture{
       outline: none;

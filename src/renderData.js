@@ -5,7 +5,11 @@ export {
 export default function (data, option) {
   option = Object.assign({
     replaceFn: (link) => {
-      return `<a href="/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
+      if (link.itemId.indexOf('/') !== -1) {
+        return `<a href="${link.itemId}" target="_blank">${link.word}</a>`
+      } else {
+        return `<a href="/detail/${link.itemId}" target="_blank" data-id="${link.itemId}">${link.word}</a>`
+      }
     },
     handleText: (text) => text,
     innerLinks: []
@@ -43,6 +47,7 @@ function handleA (data, innerLinks, replaceFn) {
   if (innerLinks && innerLinks.length) {
     let contentOffset = -1
     let replaceArr = []
+    innerLinks = innerLinks.sort((a, b) => a.contentOffset - b.contentOffset)
     innerLinks.forEach(link => {
       if (link.contentOffset != contentOffset && contentOffset != -1) {
         newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
