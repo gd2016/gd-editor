@@ -1,4 +1,5 @@
 import { dealTopic } from './untils/topic'
+import xss from 'xss'
 export {
   renderText,
   handleA
@@ -7,7 +8,7 @@ export default function (data, option) {
   option = Object.assign({
     replaceFn,
     topicFn,
-    handleText: (text) => text,
+    handleText: (text) => xss(text),
     innerLinks: []
   }, option)
   const newData = handleA(data, option.innerLinks)
@@ -16,6 +17,8 @@ export default function (data, option) {
   newData.forEach(item => {
     if (item.postTags && item.postTags.length) {
       item.text = dealTopic(option.handleText(item.text), item.postTags, option)
+    } else {
+      item.text = xss(item.text)
     }
     if (item.type === 'TEXT') {
       const index = item.index && `index="${item.index}"`

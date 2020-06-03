@@ -47,7 +47,7 @@ document.querySelector('#setData').addEventListener('click', () => {
         topicName: '2',
         wordLength: 3
       }] },
-    { type: 'TEXT', text: '121121', index: '1', style: 'OL' },
+    { type: 'TEXT', text: '<script>alert(1)</script>', index: '1', style: 'OL' },
     { type: 'TEXT', text: '2', index: 3, style: 'OL' },
     { type: 'TEXT', text: '12', style: 'REFER' }
   ], innerLinks)
