@@ -13,8 +13,10 @@ const editor = new test({
 
 document.querySelector('#getData').addEventListener('click', () => {
   let html = show(editor.getData(), {
-    innerLinks: editor.linkArr
+    innerLinks: editor.getLink()
   })
+  console.log(editor.getData(), editor.getLink())
+
   $('.content').html(html)
 })
 
@@ -23,6 +25,9 @@ document.querySelector('#getLink').addEventListener('click', () => {
 })
 
 document.querySelector('#setData').addEventListener('click', () => {
+  if ($('.dls-m-editor-content').text()) {
+    return editor.setData(editor.getData(), editor.getLink())
+  }
   const innerLinks = [{
     word: 'asd',
     itemId: '/family/subIndex?id=58018f240bd1beda25d7c186',
@@ -32,7 +37,16 @@ document.querySelector('#setData').addEventListener('click', () => {
   }]
   editor.setData([
     { type: 'IMAGE', text: '123', url: '//img.allhistory.com/5ed0f1ea28b210674be63c81.png' },
-    { style: 'UL', text: '1212', index: '1', type: 'TEXT' },
+    { style: 'UL',
+      text: '1212#2#212122,4,5-三氯苯氧乙酸',
+      index: '1',
+      type: 'TEXT',
+      postTags: [{
+        paramOffset: 4,
+        topicId: 'c81e728d9d4c2f636f067f89cc14862c',
+        topicName: '2',
+        wordLength: 3
+      }] },
     { type: 'TEXT', text: '121121', index: '1', style: 'OL' },
     { type: 'TEXT', text: '2', index: 3, style: 'OL' },
     { type: 'TEXT', text: '12', style: 'REFER' }
