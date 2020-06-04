@@ -50,6 +50,9 @@ export default class img {
       formData.append(this.formName, file)
       this[file.name + index] = this.editor.insertHtml(template())
       Service.saveVideo(this.host + this.url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
         onProgress: (e) => {
           if (e.total == 0) {
             new Alert({ text: '请重试', type: 'error', position: 'top-center' })

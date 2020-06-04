@@ -20,15 +20,16 @@ function sendRequest (type, url, params = '', config) {
   return __superfetch__.ajax({
     url,
     type: type,
-    data: params || null
+    data: params || null,
+    headers: config.headers
   }).then(res => { return res })
 }
 export default {
   // 获取词条基本信息
   /** **********多媒体***************/
   // 图片上传接口
-  saveImage (url, params) {
-    return sendRequest('post', url, params)
+  saveImage (url, params, config) {
+    return sendRequest('post', url, params, config)
   },
   saveVideo (url, params, config) {
     return sendRequest('post', url, params, config)

@@ -6,14 +6,85 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
 </head>
+<style>
+  body,html{
+    font-size: 14px;
+    font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
+  }
+  .dls-image-icon{
+    background: url('../static/img.svg');
+  }
+  .dls-h2-icon{
+    background: url('../static/h2.png');
+  }
+  .dls-h1-icon{
+    background: url('../static/h1.png');
+  }
+  .dls-refer-icon{
+    background: url('../static/refer.svg');
+  }
+  .dls-ol-icon{
+    background: url('../static/ol.svg');
+  }
+  .dls-ul-icon{
+    background: url('../static/ul.svg');
+  }
+  .dls-video-icon{
+    background: url('../static/video.svg');
+  }
+  .dls-topic-icon{
+    background: url('../static/topic.png');
+  }
+  .dls-link-icon{
+    background: url('../static/link.svg');
+  }
+  .loading{
+    background-image: url('../static/lazyloadImg.svg');
+  }
+  .clearfix::after{
+    display: block;
+    content: '';
+    clear: both;
+  }
+  .content{
+    white-space:pre-wrap;
+    display: inline-block;
+    width: 350px
+  }
+  .content img{
+    width: 100%;
+  }
+  .show-content{
+    margin-left: 100px;
+  }
+  .icon.icon-edit{
+    background-image: url('../static/link.svg');
+  }
+  .icon.icon-delete-x{
+    background-image: url('../static/video.svg');
+  }
+  .icon{
+    display: inline-block;
+    background-size: 100%;
+  }
+</style>
 <body>
     <!-- <script src="https://cdn.bootcss.com/jquery/1.12.1/jquery.min.js"></script>   -->
+    <script src="https://www.allhistory.com/online/statics/js/jquery-1.12.1.min.js"></script>
     <div id="editor-area"></div>
     <button id="getData">获取内容</button>
+    <button id="getLink">获取内链</button>
     <button id="setData">设置内容</button>
-    <script src="https://cdn.bootcss.com/eruda/1.5.4/eruda.js"></script>
-    <script>
+    <!-- <button id="showData">显示内容</button> -->
+    <div class="clearfix">
+      <div class="content" ></div>
+      <!-- <div class="content show-content" ></div> -->
+    </div>
+    
+    
+    <!-- <script src="https://cdn.bootcss.com/eruda/1.5.4/eruda.js"></script> -->
+    <!-- <script>
       eruda.init();
-    </script> 
+    </script>  -->
 <script type="text/javascript" src="app.js"></script></body>
 </html>
