@@ -21,6 +21,32 @@ document.querySelector('#getData').addEventListener('click', () => {
   $('.content').html(html)
 })
 
+document.querySelector('#showData').addEventListener('click', () => {
+  const innerLinks = [{
+    word: 'asd',
+    itemId: 'asdadasde234231k',
+    contentOffset: 1,
+    paramOffset: 3,
+    wordLength: 3
+  }, {
+    word: 'asd',
+    itemId: 'asdadasde234231k',
+    contentOffset: 4,
+    paramOffset: 3,
+    wordLength: 3
+  }]
+  const detail = [
+    { style: 'UL', text: '1212', index: '1', type: 'TEXT' },
+    { type: 'TEXT', text: '121asd121', index: '1', style: 'OL' },
+    { type: 'TEXT', text: '2', index: '2', style: 'OL' },
+    { type: 'TEXT', text: '12', style: 'REFER' }
+  ]
+  let content = show(detail, {
+    innerLinks
+  })
+  $('.show-content').html(content)
+})
+
 document.querySelector('#getLink').addEventListener('click', () => {
   console.log(editor.getLink())
 })
@@ -29,7 +55,7 @@ document.querySelector('#setData').addEventListener('click', () => {
   const innerLinks = [{
     word: 'asd',
     itemId: 'asdadasde234231k',
-    contentOffset: 0,
+    contentOffset: 4,
     paramOffset: 3,
     wordLength: 3
   }]

@@ -50,6 +50,7 @@ function handleA (data, innerLinks, replaceFn) {
     innerLinks = innerLinks.sort((a, b) => a.contentOffset - b.contentOffset)
     innerLinks.forEach(link => {
       if (link.contentOffset != contentOffset && contentOffset != -1) {
+        if (!newData[contentOffset]) return
         newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
         replaceArr = [link]
       } else {
@@ -57,7 +58,7 @@ function handleA (data, innerLinks, replaceFn) {
       }
       contentOffset = link.contentOffset
     })
-    if (contentOffset !== -1) {
+    if (contentOffset !== -1 && newData[contentOffset]) {
       newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
     }
   }

@@ -801,6 +801,7 @@ export default class MEditor {
       }
       innerLinks.forEach((link, index) => {
         if (link.contentOffset != contentOffset && contentOffset != -1) {
+          if (!dataArray[contentOffset]) return
           dataArray[contentOffset].text = dealTopic(dataArray[contentOffset].text, replaceArr, replaceFn)
           replaceArr = [link]
         } else {
@@ -808,7 +809,7 @@ export default class MEditor {
         }
         contentOffset = link.contentOffset
       })
-      if (contentOffset !== -1) {
+      if (contentOffset !== -1 && dataArray[contentOffset]) {
         dataArray[contentOffset].text = dealTopic(dataArray[contentOffset].text, replaceArr, replaceFn)
       }
     }
