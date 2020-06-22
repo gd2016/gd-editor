@@ -52,6 +52,7 @@ document.querySelector('#getLink').addEventListener('click', () => {
 })
 
 document.querySelector('#setData').addEventListener('click', () => {
+  log
   const innerLinks = [{
     word: 'asd',
     itemId: 'asdadasde234231k',
@@ -59,10 +60,5 @@ document.querySelector('#setData').addEventListener('click', () => {
     paramOffset: 3,
     wordLength: 3
   }]
-  editor.setData([
-    { style: 'UL', text: '1212', index: '1', type: 'TEXT' },
-    { type: 'TEXT', text: '121121', index: '1', style: 'OL' },
-    { type: 'TEXT', text: '2', index: 3, style: 'OL' },
-    { type: 'TEXT', text: '12', style: 'REFER' }
-  ], innerLinks)
+  editor.setData(editor.getData(), innerLinks)
 })

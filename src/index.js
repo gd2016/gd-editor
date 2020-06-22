@@ -611,7 +611,7 @@ export default class MEditor {
       this.dataOutput.push({
         type: 'VIDEO',
         url: src,
-        text: txt.innerText
+        text: xss(txt.innerText)
       })
     } else {
       const img = node.querySelector('img')
@@ -621,7 +621,7 @@ export default class MEditor {
         url: img.getAttribute('data-src'),
         height: img.naturalHeight,
         width: img.naturalWidth,
-        text: txt.innerText
+        text: xss(txt.innerText)
       })
     }
   }
@@ -671,7 +671,7 @@ export default class MEditor {
       const li = ul.querySelectorAll('li')
       txt && this.dataOutput.push({
         style,
-        text,
+        text: xss(text),
         postTags,
         index: Array.from(li).findIndex(li => li === node.parentNode) + 1,
         type: 'TEXT'
@@ -679,7 +679,7 @@ export default class MEditor {
     } else {
       txt && this.dataOutput.push({
         type: 'TEXT',
-        text,
+        text: xss(text),
         postTags,
         style
       })
