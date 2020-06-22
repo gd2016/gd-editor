@@ -30,7 +30,7 @@ export default function (data, option) {
       }
     }
     if (item.type === 'VIDEO') {
-      html += `<div class="video-box"><video src=${item.url}  class="video" controls/>`
+      html += `<div class="video-box"><video src=${item.url}  class="video" controls ></video>`
       if (item.text) {
         html += `<p class="dls-image-capture">${option.handleText(item.text)}</p></div>`
       } else {
