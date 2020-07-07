@@ -77,11 +77,7 @@ export default class img {
       let formData = new FormData()
       formData.append(this.formName, file)
       this[file.name + index] = this.editor.insertHtml(template({ src: '' }))
-      Service.saveImage(this.host + this.url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      },).then(res => {
+      Service.saveImage(this.host + this.url, formData).then(res => {
         if (res.code === 200) {
           const img = document.createElement('img')
           img.src = res.data.imageUrl

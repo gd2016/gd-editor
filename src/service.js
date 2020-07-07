@@ -29,6 +29,11 @@ export default {
   /** **********多媒体***************/
   // 图片上传接口
   saveImage (url, params, config) {
+    config = Object.assign({
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }, config)
     return sendRequest('post', url, params, config)
   },
   saveVideo (url, params, config) {
