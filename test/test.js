@@ -18,6 +18,8 @@ document.querySelector('#getData').addEventListener('click', () => {
       return `<a target="_blank" href="//10.4.40.168:3000/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
     }
   })
+  console.log(editor.getData())
+
   $('.content').html(html)
 })
 
@@ -52,7 +54,6 @@ document.querySelector('#getLink').addEventListener('click', () => {
 })
 
 document.querySelector('#setData').addEventListener('click', () => {
-  log
   const innerLinks = [{
     word: 'asd',
     itemId: 'asdadasde234231k',

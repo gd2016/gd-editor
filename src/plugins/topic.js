@@ -44,6 +44,7 @@ export default class Topic {
         } else {
           const node = selection.commonAncestorContainer
           const range = document.createRange()
+          if (node.innerHTML === '<br>') node.innerHTML = ''
           range.setStart(node, selection.startOffset)
           range.setEnd(node, selection.endOffset)
           var sel = window.getSelection()

@@ -480,8 +480,6 @@ export default class MEditor {
       return this.selection.insertNode(textNode)
     }
     const html = e.clipboardData.getData('text/html')
-    const selection = window.getSelection()
-    let P
     const imgArr = []
     const self = this
     var imgStr = xss(html, {
@@ -502,39 +500,21 @@ export default class MEditor {
             return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /><p class="dls-image-capture" contenteditable="true"></p></div>`
           }
         } else {
-          const blockTag = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd']
+          const blockTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd']
           if (blockTag.indexOf(tag) !== -1) {
-            return '\n'
+            if (options.isClosing) return '</p>'
+            return '<p>'
           }
         }
       }
     })
 
     if (imgStr.indexOf('<img') !== -1) {
-      P = document.createElement('p')
-      P.innerHTML = imgStr.trim()
-      selection.getRangeAt(0).insertNode(P)
-      this._setRange(P)
-      if (P.nextSibling && P.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
-        P.nextSibling.parentNode.removeChild(P.nextSibling)
-      }
+      document.execCommand('insertHTML', false, imgStr)
       this.image.replaceImg(imgArr, this.id)
       this.id++
     } else {
-      let paste = (e.clipboardData || window.clipboardData).getData('text')
-      // Cancel the paste operation if the cursor or highlighted area isn't found
-      if (!selection.rangeCount) return false
-      selection.getRangeAt(0).deleteContents()
-
-      let textNode = document.createTextNode(paste)
-      textNode.data = textNode.data.trim()
-      P = document.createElement('p')
-      P.appendChild(textNode)
-      selection.getRangeAt(0).insertNode(P)
-      if (textNode.nextSibling && textNode.nextSibling.nodeName === 'BR') { // 直接粘贴 会多出br标签
-        textNode.nextSibling.parentNode.removeChild(textNode.nextSibling)
-      }
-      this._setRange(textNode)
+      document.execCommand('insertHTML', false, imgStr)
     }
   }
   _toCamelCase (str) {
@@ -583,7 +563,7 @@ export default class MEditor {
         })
       } else if (node.nodeName === 'A') {
         this._handleTagA(node)
-        if (!node.nextSibling) {
+        if (!node.nextSibling || node.nextSibling.nodeName == 'BR') {
           this._handleText(node, true)
         } else {
           this.topicContent = this.topicContent + node.text
