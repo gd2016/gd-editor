@@ -500,7 +500,10 @@ export default class MEditor {
             return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /><p class="dls-image-capture" contenteditable="true"></p></div>`
           }
         } else {
-          const blockTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd']
+          const blockTag = [
+            'header','section','footer','aside','main','article','blockquote','figure',
+            'figcaption','p','h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd'
+          ]
           if (blockTag.indexOf(tag) !== -1) {
             if (options.isClosing) return '</div>'
             return '<div>'
@@ -508,14 +511,14 @@ export default class MEditor {
         }
       }
     })
-    $('.content').text(imgStr)
-
+    imgStr = imgStr.replace(/<div><\/div>/g,'').trim()
+    $('.content').html(imgStr.trim())
     if (imgStr.indexOf('<img') !== -1) {
       document.execCommand('insertHTML', false, imgStr)
       this.image.replaceImg(imgArr, this.id)
       this.id++
     } else {
-      if (!imgStr.trim()) {
+      if (!imgStr) {
         imgStr = e.clipboardData.getData('text')
       }
       document.execCommand('insertHTML', false, imgStr)
