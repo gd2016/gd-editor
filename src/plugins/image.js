@@ -108,13 +108,12 @@ export default class img {
 
   replaceImg (urlArr, id) {
     const imgArr = document.querySelectorAll(`.img${id}`)
+    const imgBlock = imgArr[0] && imgArr[0].parentNode
     const url = urlArr[0]
     if (!url) return
     this._getImgToBase64(url, (data) => {
       if (!data) {
-        imgArr[0].parentNode.classList.remove('loading')
-        imgArr[0].classList.remove(`img${id}`)
-        imgArr[0].src = null
+        imgBlock.parentNode.removeChild(imgBlock)
         urlArr.shift()
         return this.replaceImg(urlArr, id)
       }
@@ -130,16 +129,15 @@ export default class img {
             imgArr[0].parentNode.classList.remove('loading')
           }
           imgArr[0].onerror = () => {
-            imgArr[0].parentNode.classList.remove('loading')
+            imgBlock.parentNode.removeChild(imgBlock)
           }
         } else {
           imgArr[0].parentNode.classList.remove('loading')
-
           new Alert({ type: 'error', text: '上传失败', position: 'top-center' })
         }
       }).catch(err => {
         new Alert({ type: 'error', text: `上传失败${err.status}`, position: 'top-center' })
-        imgArr[0].parentNode.parentNode.removeChild(imgArr[0].parentNode)
+        imgBlock.parentNode.removeChild(imgBlock)
       }).finally(res => {
         imgArr[0].classList.remove(`img${id}`)
         urlArr.shift()

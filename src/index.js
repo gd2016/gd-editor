@@ -482,7 +482,7 @@ export default class MEditor {
     const html = e.clipboardData.getData('text/html')
     const imgArr = []
     const self = this
-    var imgStr = xss(html, {
+    let imgStr = xss(html, {
       whiteList: {
         img: ['src']
       }, // 白名单为空，表示过滤所有标签
@@ -502,18 +502,22 @@ export default class MEditor {
         } else {
           const blockTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd']
           if (blockTag.indexOf(tag) !== -1) {
-            if (options.isClosing) return '</p>'
-            return '<p>'
+            if (options.isClosing) return '</div>'
+            return '<div>'
           }
         }
       }
     })
+    $('.content').text(imgStr)
 
     if (imgStr.indexOf('<img') !== -1) {
       document.execCommand('insertHTML', false, imgStr)
       this.image.replaceImg(imgArr, this.id)
       this.id++
     } else {
+      if (!imgStr.trim()) {
+        imgStr = e.clipboardData.getData('text')
+      }
       document.execCommand('insertHTML', false, imgStr)
     }
   }
