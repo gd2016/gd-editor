@@ -505,13 +505,13 @@ export default class MEditor {
             'figcaption', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd'
           ]
           if (blockTag.indexOf(tag) !== -1) {
-            if (options.isClosing) return '</div>'
-            return '<div>'
+            if (options.isClosing) return '</p>'
+            return '<p>'
           }
         }
       }
     })
-    imgStr = imgStr.replace(/<div><\/div>/g, '').trim()
+    imgStr = imgStr.replace(/<p><\/p>/g, '').trim()
     if (imgStr.indexOf('<img') !== -1) {
       document.execCommand('insertHTML', false, imgStr)
       this.image.replaceImg(imgArr, this.id)
