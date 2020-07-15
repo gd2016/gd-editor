@@ -110,5 +110,5 @@ export const replaceFn = (link) => {
 }
 
 export const topicFn = (topicNode) => {
-  return `<a class="topic" topic-id="${topicNode.topicId}">${topicNode.text}</a>`
+  return `<a href="#" class="topic" topic-id="${topicNode.topicId}">${topicNode.text}</a>`
 }

@@ -60,9 +60,8 @@ export default class Link {
           var sel = window.getSelection()
           sel.removeAllRanges()
           sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a class="link" item-id="${this.id}">${name || this.name}</a>`)
+          document.execCommand('insertHTML', false, `<a href="${this.host}/detail/${this.id}" class="link" item-id="${this.id}">${name || this.name}</a>`)
         }
-        $('a.link').css({ '-webkit-user-modify': 'read-only' })
         this.pop.close()
       }
     })

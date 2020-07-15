@@ -11,7 +11,8 @@ import {
   getParents,
   getlastImg,
   getOffset,
-  dataMap
+  dataMap,
+  toCamelCase
 } from './untils/fn'
 export default class MEditor {
   constructor (props) {
@@ -64,7 +65,7 @@ export default class MEditor {
   _newPlugins (toolbar) {
     toolbar.forEach(menu => {
       const plugin = plugins[menu]
-      const pluginName = this._toCamelCase(plugin.name)
+      const pluginName = toCamelCase(plugin.name)
       if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
         this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
         this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
@@ -400,7 +401,8 @@ export default class MEditor {
           objE.innerHTML = html
           const src = objE.childNodes[0].src
           if (src.indexOf('img.allhistory.com') !== -1) {
-            return `<div class="m-editor-block" ondragstart="return false"><img src=${src} /><p class="dls-image-capture" contenteditable="true"></p></div>`
+            const dataSrc = src.replace(/https:|http:/, '')
+            return `<div class="m-editor-block" ondragstart="return false"><img data-src=${dataSrc} src=${dataSrc} /><p class="dls-image-capture" contenteditable="true"></p></div>`
           } else {
             imgArr.push(src)
             return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /><p class="dls-image-capture" contenteditable="true"></p></div>`
@@ -528,7 +530,7 @@ export default class MEditor {
   _handleText (node, isA) {
     let name, style
     let map = {}
-    if (node.nextSibling && node.nextSibling.tagName === 'A') { // 如果后面有a标签，只加内容但是不添加到content
+    if (node.nextSibling && (node.nextSibling.tagName === 'A' || node.nextSibling.nodeName === '#text')) { // 如果后面有a标签，只加内容但是不添加到content
       this.topicContent = this.topicContent + (isA ? node.text : node.data)
       return
     }
