@@ -15,7 +15,7 @@ export const dealTopic = (text, postTags, option) => {
       if (option) {
         node = option(node)
       } else {
-        node = `<a class="topic" topic-id="${node.topicId}">${node.text}</a>`
+        node = `<a href="#" class="topic" topic-id="${node.topicId}">${node.text}</a>`
       }
     }
     processedArr.push(node)

@@ -1,12 +1,6 @@
 import './index.less'
-import imagePlugin from './plugins/image'
-import videoPlugin from './plugins/video'
-import stylePlugin from './plugins/style'
-// import ulPlugin from './ul'
-import topicPlugin from './plugins/topic'
-import ulPlugin from './plugins/list'
+import plugins from './plugins/index'
 import xss from 'xss'
-import linkPlugin from './plugins/link'
 import { dealTopic } from './untils/topic'
 export default class MEditor {
   constructor (props) {
@@ -16,75 +10,13 @@ export default class MEditor {
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
-      basePlugins: [{
-        constructor: imagePlugin,
-        name: 'image',
-        params: {
-          url: '/api/image/upload/v1',
-          formName: 'userfile'
-        }
-      }, {
-        constructor: videoPlugin,
-        name: 'video',
-        params: {
-          url: '/api/video/upload/v1',
-          formName: 'userfile'
-        }
-      }, {
-        constructor: stylePlugin,
-        name: 'h1',
-        params: {
-          type: 'h1',
-          label: '1级标题'
-        }
-      }, {
-        constructor: stylePlugin,
-        name: 'h2',
-        params: {
-          type: 'h2',
-          label: '2级标题'
-        }
-      }, {
-        constructor: ulPlugin,
-        name: 'ol',
-        params: {
-          label: '有序列表'
-        }
-
-      }, {
-        constructor: ulPlugin,
-        name: 'ul',
-        params: {
-          label: '无序列表'
-        }
-      }, {
-        constructor: stylePlugin,
-        name: 'refer',
-        params: {
-          type: 'refer',
-          label: '插入引用'
-        }
-      }, {
-        constructor: topicPlugin,
-        name: 'topic',
-        params: {
-          url: '/api/toppost/tag/search',
-          label: '插入话题'
-        }
-      }, {
-        constructor: linkPlugin,
-        name: 'link',
-        params: {
-          url: '/api/search/getSuggestion',
-          label: '插入链接'
-        }
-      }],
       minHeight: 200,
       maxHeight: 400000,
       content: '',
       host: '__ALLHISTORY_HOSTNAME__',
       onReady (editor) {}
     }, props)
+    this.currentRange = ''
     this.dataOutput = [] // 存储输出数据
     this.topicContent = '' // 存储话题内容
     this.linkArr = [] // 外链偏移量
@@ -105,30 +37,27 @@ export default class MEditor {
   }
 
   _initPlugins () {
-    this._newPlugins(this.basePlugins)
-    this._newPlugins(this.plugins)
+    this._newPlugins(this.toolbar)
   }
   /**
    * @function  加载插件
    * @param  {array}  [{ constructor: imagePlugin, name: 'image',output(node){} }]
    */
-  _newPlugins (plugins) {
-    if (plugins.length) {
-      plugins.forEach(plugin => {
-        const pluginName = this._toCamelCase(plugin.name)
-        if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
-          // plugin.type && plugin.constructor.setType(plugin.type)
-          this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
-          this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
-            this[pluginName].initCommand()
-          }
-          this[pluginName].init && this[pluginName].init(this.editor)
-          if (this[pluginName].label) {
-            this.container.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
-          }
+  _newPlugins (toolbar) {
+    toolbar.forEach(menu => {
+      const plugin = plugins[menu]
+      const pluginName = this._toCamelCase(plugin.name)
+      if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
+        this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
+        this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
+          this[pluginName].initCommand()
         }
-      })
-    }
+        this[pluginName].init && this[pluginName].init(this.editor)
+        if (this[pluginName].label) {
+          this.container.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
+        }
+      }
+    })
   }
   /**
    * @function 主动定位光标
@@ -205,6 +134,7 @@ export default class MEditor {
     this.contentContainer.innerHTML = '<p><br></p>'
     this.contentContainer.classList.add('dls-m-editor-content')
     this.contentContainer.setAttribute('contenteditable', true)
+    this.contentContainer.setAttribute('spellcheck', false)
     this.contentContainer.style.minHeight = this.minHeight + 'px'
     this.contentContainer.style.maxHeight = this.maxHeight + 'px'
     this.box.appendChild(this.contentContainer)
@@ -699,7 +629,9 @@ export default class MEditor {
    * @param  {node} 节点
    */
   _handleBr (node) {
-    let nodeName = node.parentNode.parentNode.nodeName
+    const nodeName = node.parentNode.parentNode.nodeName
+    const prev = node.previousSibling && node.previousSibling.nodeName
+    const next = node.nextSibling && node.nextSibling.nodeName
     if (nodeName === 'UL' || nodeName === 'OL') {
       const ul = node.parentNode.parentNode
       const li = ul.querySelectorAll('li')
@@ -709,12 +641,10 @@ export default class MEditor {
         index: (nodeName === 'OL' || nodeName === 'UL') && Array.from(li).findIndex(li => li === node.parentNode) + 1,
         type: 'TEXT'
       })
-    } else if (node.previousSibling && node.previousSibling.nodeName === '#text') {
+    } else if (prev === '#text' || prev === 'A') {
       // br混在文本节点前面的情况
-    } else if (node.nextSibling && node.nextSibling.nodeName === '#text') {
+    } else if (next === '#text' || next === 'A') {
       // br混在文本节点后面的情况
-    } else if (node.nextSibling && node.nextSibling.nodeName === 'A') {
-      // 添加内链的时候会混一个br节点
     } else {
       this.dataOutput.push({
         type: 'TEXT',
@@ -803,9 +733,6 @@ export default class MEditor {
       content += this._dataMap(data, dataArray, index)
     })
     this.contentContainer.innerHTML = content
-    this.contentContainer.querySelectorAll('a').forEach(node => {
-      node.style['-webkit-user-modify'] = 'read-only'
-    })
   }
   insertAfter (newElement, targetElement) {
     var parent = targetElement.parentNode
