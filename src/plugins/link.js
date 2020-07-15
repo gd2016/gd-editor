@@ -2,7 +2,7 @@ import { PopBox, Alert } from '@portal/dls-ui'
 import SearchBox from '@portal/dls-searchbox'
 const template = function () {
   return `<div class="link-search-box search-box">
-    <input type="text" class="link-text"  placeholder="输入话题名称"/>
+    <input type="text" class="link-text"  placeholder="输入词条名称"/>
     <ul  class="search-box-suggestions link-search-box-suggestions"></ul>
   </div>`
 }
@@ -60,7 +60,7 @@ export default class Link {
           var sel = window.getSelection()
           sel.removeAllRanges()
           sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a class="link" item-id="${this.id}">${this.name}</a>`)
+          document.execCommand('insertHTML', false, `<a class="link" item-id="${this.id}">${name || this.name}</a>`)
         }
         $('a.link').css({ '-webkit-user-modify': 'read-only' })
         this.pop.close()
@@ -112,8 +112,10 @@ export default class Link {
   _pop () {
     this._hide()
     let url = this.node.getAttribute('item-id')
-    if (url.indexOf('/') === 0 && url.indexOf('//') !== 0) {
-      url = frameHost ? this.frameHost + url : url
+    if (url.indexOf('/') === -1) {
+      url = this.frameHost ? this.frameHost + `/detail/${url}` : `/detail/${url}`
+    } else {
+      url = this.frameHost ? this.frameHost + url : url
     }
     this.$pop = $(templateEdit({
       href: url

@@ -1,3 +1,6 @@
+import {
+  insertAfter
+} from '../untils/fn'
 export default class Style {
   constructor (props) {
     Object.assign(this, {
@@ -8,44 +11,35 @@ export default class Style {
     }, props)
   }
 
-  init () {
-    // this.editor.contentContainer.addEventListener('click', this._updateToolStatus.bind(this))
-    // this.editor.contentContainer.addEventListener('keydown', this._updateToolStatus.bind(this))
-  }
-  _replaceSelection () {
-    var selecter = window.getSelection()
-    var selectStr = selecter.toString()
-    if (selectStr.trim != '') {
-      var rang = selecter.getRangeAt(0)
-      // return console.dir(rang.endContainer)
-      if (rang.endContainer.parentNode.nodeName === 'LI') return // 列表不允许添加样式
+  _replaceSelection () { // 针对选中文字做的处理
+    const selecter = window.getSelection()
+    let selectStr = selecter.toString()
 
-      const p = document.createElement('p')
-      p.innerText = selectStr
-      if (rang.endContainer.nodeName === '#text') {
-        if (rang.endContainer.parentNode.classList.contains(this.type)) {
-          rang.endContainer.parentNode.classList.remove(this.type)
-          // rang.surroundContents(p)
-          // this.editor._setRange(p)
-          this.editor.updateTool(false, { className: this.type })
+    if (selectStr.trim == '') return
+
+    var rang = selecter.getRangeAt(0)
+    if (rang.endContainer.parentNode.nodeName === 'LI') return // 列表不允许添加样式
+
+    const p = document.createElement('p')
+    p.innerText = selectStr
+    if (rang.endContainer.nodeName === '#text') {
+      if (rang.endContainer.parentNode.classList.contains(this.type)) {
+        rang.endContainer.parentNode.classList.remove(this.type)
+        this.editor.updateTool(false, { className: this.type })
+      } else {
+        this._setClass(p, this.type)
+
+        if (rang.endContainer.parentNode.className) {
+          rang.deleteContents()
+          insertAfter(p, rang.endContainer.parentNode)
         } else {
-          this._setClass(p, this.type)
-
-          if (rang.endContainer.parentNode.className) {
-            rang.deleteContents()
-            console.log(this.editor)
-
-            this.editor.insertAfter(p, rang.endContainer.parentNode)
-            // rang.endContainer.parentNode.parentNode.insertBefore(p, rang.endContainer.parentNode.nextSibling) // 在选中文档的节点后加入新节点
-          } else {
-            p.innerText = rang.toString()
-            rang.deleteContents()
-            this.editor.insertHtml(p)
-          }
-
-          this.editor._setRange(p)
-          this.editor.updateTool(true, { className: this.type })
+          p.innerText = rang.toString()
+          rang.deleteContents()
+          this.editor.insertHtml(p)
         }
+
+        this.editor._setRange(p)
+        this.editor.updateTool(true, { className: this.type })
       }
     }
   }
