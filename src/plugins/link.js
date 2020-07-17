@@ -46,22 +46,16 @@ export default class Link {
           })
         }
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
-          return new Alert({
-            duration: 2000,
-            position: 'top-center',
-            type: 'error',
-            text: '请聚焦编辑器后再插入'
-          })
-        } else {
-          const node = selection.commonAncestorContainer
-          const range = document.createRange()
-          range.setStart(node, selection.startOffset)
-          range.setEnd(node, selection.endOffset)
-          var sel = window.getSelection()
-          sel.removeAllRanges()
-          sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a href="${this.host}/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
+          selection = this.editor.currentSelection
         }
+        const node = selection.commonAncestorContainer
+        const range = document.createRange()
+        range.setStart(node, selection.startOffset)
+        range.setEnd(node, selection.endOffset)
+        var sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+        document.execCommand('insertHTML', false, `<a href="${this.host}/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
         this._hide()
         this.pop.close()
       }
@@ -71,7 +65,7 @@ export default class Link {
       input: 'input',
       autoFocus: true,
       suggestContainer: '.link-search-box-suggestions',
-      suggestionUrl: this.url,
+      suggestionUrl: this.host + this.url,
       historyName: null,
       absolute: true,
       defaultValue: name,
@@ -86,7 +80,7 @@ export default class Link {
         this.name = entry.name.trim()
       },
       parseResp (resp) {
-        return resp.data.sugNodes || []
+        return resp.data || []
       }
     })
   }

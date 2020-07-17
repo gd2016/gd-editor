@@ -73,7 +73,7 @@ const plugins = {
     constructor: linkPlugin,
     name: 'link',
     params: {
-      url: '/api/search/getSuggestion',
+      url: '/api/search/getSuggestionV3',
       label: '插入链接'
     }
   }

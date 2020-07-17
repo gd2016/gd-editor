@@ -35,7 +35,7 @@ export default class MEditor {
       host: '__ALLHISTORY_HOSTNAME__',
       onReady (editor) {}
     }, props)
-    this.currentRange = ''
+    this.currentSelection = ''
     this.dataOutput = [] // 存储输出数据
     this.topicContent = '' // 存储话题内容
     this.linkArr = [] // 外链偏移量
@@ -67,7 +67,7 @@ export default class MEditor {
       const plugin = plugins[menu]
       const pluginName = toCamelCase(plugin.name)
       if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
-        this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
+        this[pluginName] = new plugin.constructor({ frameHost: this.frameHost, name: plugin.name, editor: this, host: this.host, ...plugin.params })
         this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
           this[pluginName].initCommand()
         }
@@ -155,6 +155,7 @@ export default class MEditor {
     this.contentContainer.addEventListener('keydown', this._keydown.bind(this))
     this.contentContainer.addEventListener('keyup', this._keyup.bind(this))
     this.contentContainer.addEventListener('click', this._click.bind(this))
+    this.contentContainer.addEventListener('blur', this._blur.bind(this))
   }
 
   /**
@@ -224,6 +225,13 @@ export default class MEditor {
     bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.add('active')
     !bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.remove('active')
     return bool
+  }
+
+  /**
+   * @function 记住selection
+   */
+  _blur () {
+    this.currentSelection = window.getSelection().getRangeAt(0)
   }
   /**
    * @function 主要针对backspace做的处理，用于删除图片块的数据

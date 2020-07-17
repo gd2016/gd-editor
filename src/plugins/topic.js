@@ -45,7 +45,7 @@ export default class Topic {
   }
 
   initCommand () {
-    const selection = window.getSelection().getRangeAt(0)
+    let selection = window.getSelection().getRangeAt(0)
     this.$html = $(template())
     this.pop = new PopBox({
       title: '插入话题',
@@ -61,23 +61,17 @@ export default class Topic {
           })
         }
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
-          return new Alert({
-            duration: 2000,
-            position: 'top-center',
-            type: 'error',
-            text: '请聚焦编辑器后再插入'
-          })
-        } else {
-          const node = selection.commonAncestorContainer
-          const range = document.createRange()
-          if (node.innerHTML === '<br>') node.innerHTML = ''
-          range.setStart(node, selection.startOffset)
-          range.setEnd(node, selection.endOffset)
-          var sel = window.getSelection()
-          sel.removeAllRanges()
-          sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a href="#" class="topic" topic-id="${this.topicId}">${this.name}</a>`)
+          selection = this.editor.currentSelection
         }
+        const node = selection.commonAncestorContainer
+        const range = document.createRange()
+        if (node.innerHTML === '<br>') node.innerHTML = ''
+        range.setStart(node, selection.startOffset)
+        range.setEnd(node, selection.endOffset)
+        var sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+        document.execCommand('insertHTML', false, `<a href="#" class="topic" topic-id="${this.topicId}">${this.name}</a>`)
         this.pop.close()
       }
     })
