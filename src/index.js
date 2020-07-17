@@ -28,7 +28,7 @@ export default class MEditor {
       innerLinks: [],
       frameHost: '',
       replaceFn: (link) => {
-        return `<a class="link" item-id="${link.itemId}">${link.word}</a>`
+        return `<a href="${this.host}/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
       },
       topicFn,
       handleText: (text) => xss(text),
@@ -52,7 +52,7 @@ export default class MEditor {
   }
 
   _initContent () {
-    if (this.content) this.setData(this.content, innerLinks)
+    if (this.content) this.setData(this.content, this.innerLinks)
   }
 
   _initPlugins () {

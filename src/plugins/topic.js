@@ -17,7 +17,33 @@ export default class Topic {
   }
 
   init () {
+    this.editor.contentContainer.addEventListener('click', this._onClick.bind(this))
+    this.editor.contentContainer.addEventListener('keyup', this._onKeyup.bind(this))
   }
+
+  _selectA (node) {
+    const range = document.createRange()
+    range.selectNode(node)
+    var sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }
+
+  _onClick (event) {
+    if (event.target.nodeName == 'A' && event.target.classList.contains('topic')) {
+      this._selectA(event.target)
+    }
+  }
+
+  _onKeyup (e) { // 按左右键进入内链的情况
+    if (e.keyCode !== 37 && e.keyCode !== 39) return
+    const rangeDom = window.getSelection().getRangeAt(0)
+    const domA = rangeDom.startContainer.parentNode
+    if (domA.nodeName == 'A' && domA.classList.contains('topic')) {
+      this._selectA(rangeDom.startContainer.parentNode)
+    }
+  }
+
   initCommand () {
     const selection = window.getSelection().getRangeAt(0)
     this.$html = $(template())

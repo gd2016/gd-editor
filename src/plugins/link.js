@@ -60,8 +60,9 @@ export default class Link {
           var sel = window.getSelection()
           sel.removeAllRanges()
           sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a href="${this.host}/detail/${this.id}" class="link" item-id="${this.id}">${name || this.name}</a>`)
+          document.execCommand('insertHTML', false, `<a href="${this.host}/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
         }
+        this._hide()
         this.pop.close()
       }
     })
@@ -82,7 +83,7 @@ export default class Link {
       },
       onSelect: (entry) => {
         this.id = entry.id
-        this.name = entry.name
+        this.name = entry.name.trim()
       },
       parseResp (resp) {
         return resp.data.sugNodes || []
@@ -91,19 +92,33 @@ export default class Link {
   }
   _bind () {
     this.editor.contentContainer.addEventListener('click', this._onClick.bind(this))
+    this.editor.contentContainer.addEventListener('keyup', this._onKeyup.bind(this))
   }
+
+  _onKeyup (e) { // 按左右键进入内链的情况
+    if (e.keyCode !== 37 && e.keyCode !== 39) return
+    const rangeDom = window.getSelection().getRangeAt(0)
+    const domA = rangeDom.startContainer.parentNode
+    if (domA.nodeName == 'A' && domA.classList.contains('link')) {
+      this._selectA(rangeDom.startContainer.parentNode)
+    }
+  }
+
+  _selectA (node) {
+    const range = document.createRange()
+    range.selectNode(node)
+    var sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+    this.node = node
+    this.selection = window.getSelection().getRangeAt(0)
+    this._pop()
+    this._bindIcon()
+  }
+
   _onClick (event) {
     if (event.target.nodeName == 'A' && event.target.classList.contains('link')) {
-      // if (!event.target.getAttribute('href')) return
-      const range = document.createRange()
-      range.selectNode(event.target)
-      var sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
-      this.node = event.target
-      this.selection = window.getSelection().getRangeAt(0)
-      this._pop()
-      this._bindIcon()
+      this._selectA(event.target)
     } else {
       this._hide()
     }
