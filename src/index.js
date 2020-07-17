@@ -574,7 +574,7 @@ export default class MEditor {
     if (style === 'OL' || style === 'UL') {
       const ul = node.parentNode.parentNode
       const li = ul.querySelectorAll('li')
-      txt && this.dataOutput.push({
+      text && this.dataOutput.push({
         style,
         text: xss(text),
         postTags,
@@ -582,7 +582,7 @@ export default class MEditor {
         type: 'TEXT'
       })
     } else {
-      txt && this.dataOutput.push({
+      text && this.dataOutput.push({
         type: 'TEXT',
         text: xss(text),
         postTags,

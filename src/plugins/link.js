@@ -29,8 +29,9 @@ export default class Link {
   }
   initCommand (name, select) {
     let selection = select
+
     if (!select) selection = window.getSelection().getRangeAt(0)
-    if (!name) name = window.getSelection().toString()
+    if (!name) this.name = window.getSelection().toString()
     this.$html = $(template())
     this.pop = new PopBox({
       title: '插入链接',
@@ -48,6 +49,7 @@ export default class Link {
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
           selection = this.editor.currentSelection
         }
+        selection.deleteContents()
         const node = selection.commonAncestorContainer
         const range = document.createRange()
         range.setStart(node, selection.startOffset)
@@ -68,16 +70,16 @@ export default class Link {
       suggestionUrl: this.host + this.url,
       historyName: null,
       absolute: true,
-      defaultValue: name,
+      defaultValue: this.name,
       domainName: '',
       noResultTip: true,
       emitFocusEvent: () => {
         this.id = ''
-        this.name = ''
+        // this.name = ''
       },
       onSelect: (entry) => {
         this.id = entry.id
-        this.name = entry.name.trim()
+        if (!this.name) this.name = entry.name.trim()
       },
       parseResp (resp) {
         return resp.data || []

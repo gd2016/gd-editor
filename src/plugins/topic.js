@@ -63,6 +63,7 @@ export default class Topic {
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
           selection = this.editor.currentSelection
         }
+        selection.deleteContents()
         const node = selection.commonAncestorContainer
         const range = document.createRange()
         if (node.innerHTML === '<br>') node.innerHTML = ''
