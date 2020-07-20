@@ -18,7 +18,7 @@ export default function (data, option) {
     if (item.postTags && item.postTags.length) {
       item.text = dealTopic(option.handleText(item.text), item.postTags, option)
     } else {
-      item.text = xss(item.text)
+      item.text = option.handleText(item.text)
     }
     if (item.type === 'TEXT') {
       const index = item.index && `index="${item.index}"`
