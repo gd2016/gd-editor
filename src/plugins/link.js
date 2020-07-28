@@ -57,7 +57,7 @@ export default class Link {
         var sel = window.getSelection()
         sel.removeAllRanges()
         sel.addRange(range)
-        document.execCommand('insertHTML', false, `<a href="${this.host}/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
+        document.execCommand('insertHTML', false, `<a href="/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
         this._hide()
         this.pop.close()
       }
@@ -78,11 +78,23 @@ export default class Link {
         // this.name = ''
       },
       onSelect: (entry) => {
+        if (entry.type === 'new') {
+          return window.open(`${this.frameHost}/user/newentry?urlKeyword=${btoa(encodeURIComponent(entry.keyword))}#/addNewEntry`, '_blank')
+        }
         this.id = entry.id
         if (!this.name) this.name = entry.name.trim()
       },
-      parseResp (resp) {
-        return resp.data || []
+      parseResp: (resp) => {
+        let sugList = resp.data || []
+        let keyword = $.trim(this.searchBox.getInputEleVal())
+        sugList.push({
+          name: `<a target="_blank"><div class="icon icon-add"></div>创建 <b>${keyword}</b></a>`,
+          class: 'suggestion-add-new-entry',
+          noicon: 'true',
+          type: 'new',
+          keyword
+        })
+        return sugList
       }
     })
   }

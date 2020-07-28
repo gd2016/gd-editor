@@ -7,6 +7,7 @@ const editor = new test({
   container: document.querySelector('#editor-area'),
   maxlength: 10,
   host: '',
+  frameHost: '//10.4.40.168',
   onReady: (editor) => {
   }
 })

@@ -2,6 +2,7 @@ import './index.less'
 import plugins from './plugins/index'
 import xss from 'xss'
 import { dealTopic } from './untils/topic'
+import Float from './plugins/float'
 import {
   handleA,
   topicFn
@@ -19,6 +20,7 @@ export default class MEditor {
     Object.assign(this, {
       container: null,
       toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
+      float: ['link'],
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
@@ -26,7 +28,7 @@ export default class MEditor {
       maxHeight: 400000,
       content: '',
       innerLinks: [],
-      frameHost: '',
+      frameHost: '__ALLHISTORY_HOSTNAME__',
       replaceFn: (link) => {
         return `<a href="${this.host}/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
       },
@@ -56,14 +58,15 @@ export default class MEditor {
   }
 
   _initPlugins () {
-    this._newPlugins(this.toolbar)
+    this._newPlugins()
+    this.float.length && this._initFloat()
   }
   /**
    * @function  加载插件
    * @param  {array}  [{ constructor: imagePlugin, name: 'image',output(node){} }]
    */
-  _newPlugins (toolbar) {
-    toolbar.forEach(menu => {
+  _newPlugins () {
+    this.toolbar.forEach(menu => {
       const plugin = plugins[menu]
       const pluginName = toCamelCase(plugin.name)
       if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
@@ -78,6 +81,14 @@ export default class MEditor {
       }
     })
   }
+
+  _initFloat () {
+    new Float({
+      editor: this,
+      tools: this.float
+    })
+  }
+
   _setRange (node) {
     this.selection = setRange(node)
   }
