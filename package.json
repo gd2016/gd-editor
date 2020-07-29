@@ -47,7 +47,8 @@
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.8",
-    "xss": "^1.0.6"
+    "xss": "^1.0.6",
+    "jsdom": "^16.3.0"
   },
   "peerDependencies": {
     "@ah/super-fetch": "^2.1.11",
