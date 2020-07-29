@@ -1,6 +1,7 @@
 const jsdom = require('jsdom')
 const newData = []
-
+// const data = require('./test')
+// console.log(serialize(data))
 function serialize (data) {
   const { JSDOM } = jsdom
   const dom = JSDOM.fragment(data)
@@ -43,11 +44,23 @@ function handleP (node) {
 }
 function handleA (node) {
   if (node.href.indexOf('video') > 0) {
-    newData.push({
-      type: 'VIDEO',
-      text: '',
-      url: node.href
-    })
+    if (node.classList.contains('video-box')) {
+      const thumb = node.querySelector('.thumbnail').src
+      const title = node.querySelector('.title').textContent
+      newData.push({
+        type: 'VIDEO',
+        text: '',
+        url: node.href,
+        thumb,
+        title
+      })
+    } else {
+      newData.push({
+        type: 'VIDEO',
+        text: '',
+        url: node.href
+      })
+    }
   }
 }
 function handleFigure (node) {

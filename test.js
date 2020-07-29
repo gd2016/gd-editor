@@ -21,7 +21,7 @@ module.exports = `<p>既然题主说电视剧了，那就用电视剧里的吧�
   target=\"_blank\" data-video-id=\"\" data-video-playable=\"true\" data-name=\"\"
   data-poster=\"https://pic4.zhimg.com/80/v2-759291ebcbab03c09f041a3a562367b7_b.jpg\"
   data-lens-id=\"995077235392442368\">
-  < img class=\"thumbnail\" src=\"https://pic4.zhimg.com/80/v2-759291ebcbab03c09f041a3a562367b7_b.jpg\" /><span
+  <img class=\"thumbnail\" src=\"https://pic4.zhimg.com/80/v2-759291ebcbab03c09f041a3a562367b7_b.jpg\" /><span
     class=\"content\"><span class=\"title\"><span class=\"z-ico-extern-gray\"></span><span
         class=\"z-ico-extern-blue\"></span></span><span class=\"url\"><span
         class=\"z-ico-video\"></span>https://www.zhihu.com/video/995077235392442368</span></span></a>`
