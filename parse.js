@@ -1,6 +1,6 @@
 const jsdom = require('jsdom')
 const newData = []
-// const data = require('./test')
+// const data = require('./test1')
 // console.log(serialize(data))
 function serialize (data) {
   const { JSDOM } = jsdom
@@ -43,7 +43,9 @@ function handleP (node) {
   })
 }
 function handleA (node) {
-  if (node.href.indexOf('video') > 0) {
+  if (node.href.indexOf('www.zhihu.com/zvideo') > 0 ||
+  node.href.indexOf('www.zhihu.com/video') > 0 ||
+  node.href.indexOf('video.zhihu.com/video') > 0) {
     if (node.classList.contains('video-box')) {
       const thumb = node.querySelector('.thumbnail').src
       const title = node.querySelector('.title').textContent
@@ -65,7 +67,7 @@ function handleA (node) {
 }
 function handleFigure (node) {
   const url = node.querySelector('img').getAttribute('data-actualsrc')
-  const text = node.querySelector('figcaption').textContent
+  const text = (node.querySelector('figcaption') || '') && node.querySelector('figcaption').textContent
   newData.push({
     type: 'IMAGE',
     text,
