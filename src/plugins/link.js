@@ -32,6 +32,11 @@ export default class Link {
 
     if (!select) selection = window.getSelection().getRangeAt(0)
     if (!name) this.name = window.getSelection().toString()
+
+    if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
+      selection = this.editor.currentSelection
+      this.name = selection.toString()
+    }
     this.$html = $(template())
     this.pop = new PopBox({
       title: '插入链接',
@@ -46,10 +51,7 @@ export default class Link {
             text: '请选择词条后再插入'
           })
         }
-        if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
-          selection = this.editor.currentSelection
-        }
-        selection.deleteContents()
+
         const node = selection.commonAncestorContainer
         const range = document.createRange()
         range.setStart(node, selection.startOffset)

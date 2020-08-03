@@ -4,10 +4,18 @@ const newData = []
 // console.log(serialize(data))
 function serialize (data) {
   const { JSDOM } = jsdom
-  const dom = JSDOM.fragment(data)
-  Array.from(dom.childNodes).forEach(node => {
+  const dom = JSDOM.fragment(`<div>${data}</div>`)
+  Array.from(dom.firstChild.childNodes).forEach(node => {
+    console.log(node.nodeName)
     switch (node.nodeName) {
-      case '#text': return
+      case '#text':
+        return handleText(node)
+      case 'BR':
+        return newData.push({
+          type: 'TEXT',
+          text: '',
+          style: 'CONTENT'
+        })
       case 'OL':
       case 'UL':
         return handleLi(node)
@@ -23,6 +31,14 @@ function serialize (data) {
     }
   })
   return newData
+}
+
+function handleText (node) {
+  node.data && node.data !== '\n' && newData.push({
+    type: 'TEXT',
+    text: node.data,
+    style: 'CONTENT'
+  })
 }
 
 function handleLi (node) {

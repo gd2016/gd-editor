@@ -9,7 +9,7 @@ const template = function (tools) {
       <span onmousedown="event.preventDefault();" data-type="${tool}" class="m_float_icon icon dls-${tool}-icon">&nbsp;</span>
     </div>`
   })
-  return `<div class="dls-m-floating-tools"><div>${strTemplate}</div></div>`
+  return `<div class="dls-m-floating-tools">${strTemplate}</div>`
 }
 
 export default class FloatTools {
@@ -25,6 +25,11 @@ export default class FloatTools {
   _bind () {
     this.editor.contentContainer.addEventListener('mouseup', this._onMouseup.bind(this))
     this.editor.contentContainer.addEventListener('keyup', this._onMouseup.bind(this))
+    $(document).on('click.float', (e) => {
+      if ($(e.target).parents('.dls-m-floating-tools').length < 1) {
+        this.$pop && this.$pop.hide()
+      }
+    })
     $(window).on('scroll.m_float', e => {
       this.$pop && this.$pop.hide()
     })
@@ -60,10 +65,10 @@ export default class FloatTools {
   }
 
   _bindIcon () {
-    this.$pop.find('.icon').on('click', (e) => {
+    this.$pop.find('.m_float_icon_wrapper').on('click', (e) => {
       e.preventDefault()
       this.$pop.hide()
-      const name = $(e.target).data('type')
+      const name = $(e.target).data('type') || $(e.target).find('.icon').data('type')
       const pluginName = toCamelCase(name)
       this.editor[pluginName].initCommand()
     })
