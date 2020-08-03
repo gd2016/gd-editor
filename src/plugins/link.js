@@ -2,7 +2,7 @@ import { PopBox, Alert } from '@portal/dls-ui'
 import SearchBox from '@portal/dls-searchbox'
 const template = function () {
   return `<div class="link-search-box search-box">
-    <input type="text" class="link-text"  placeholder="输入话题名称"/>
+    <input type="text" class="link-text"  placeholder="输入词条名称"/>
     <ul  class="search-box-suggestions link-search-box-suggestions"></ul>
   </div>`
 }
@@ -29,8 +29,9 @@ export default class Link {
   }
   initCommand (name, select) {
     let selection = select
+
     if (!select) selection = window.getSelection().getRangeAt(0)
-    if (!name) name = window.getSelection().toString()
+    if (!name) this.name = window.getSelection().toString()
     this.$html = $(template())
     this.pop = new PopBox({
       title: '插入链接',
@@ -46,23 +47,18 @@ export default class Link {
           })
         }
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
-          return new Alert({
-            duration: 2000,
-            position: 'top-center',
-            type: 'error',
-            text: '请聚焦编辑器后再插入'
-          })
-        } else {
-          const node = selection.commonAncestorContainer
-          const range = document.createRange()
-          range.setStart(node, selection.startOffset)
-          range.setEnd(node, selection.endOffset)
-          var sel = window.getSelection()
-          sel.removeAllRanges()
-          sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a class="link" item-id="${this.id}">${this.name}</a>`)
+          selection = this.editor.currentSelection
         }
-        $('a.link').css({ '-webkit-user-modify': 'read-only' })
+        selection.deleteContents()
+        const node = selection.commonAncestorContainer
+        const range = document.createRange()
+        range.setStart(node, selection.startOffset)
+        range.setEnd(node, selection.endOffset)
+        var sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+        document.execCommand('insertHTML', false, `<a href="/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
+        this._hide()
         this.pop.close()
       }
     })
@@ -71,40 +67,66 @@ export default class Link {
       input: 'input',
       autoFocus: true,
       suggestContainer: '.link-search-box-suggestions',
-      suggestionUrl: this.url,
+      suggestionUrl: this.host + this.url,
       historyName: null,
       absolute: true,
-      defaultValue: name,
+      defaultValue: this.name,
       domainName: '',
       noResultTip: true,
       emitFocusEvent: () => {
         this.id = ''
-        this.name = ''
+        // this.name = ''
       },
       onSelect: (entry) => {
+        if (entry.type === 'new') {
+          return window.open(`${this.frameHost}/user/newentry?urlKeyword=${btoa(encodeURIComponent(entry.keyword))}#/addNewEntry`, '_blank')
+        }
         this.id = entry.id
-        this.name = entry.name
+        if (!this.name) this.name = entry.name.trim()
       },
-      parseResp (resp) {
-        return resp.data.sugNodes || []
+      parseResp: (resp) => {
+        let sugList = resp.data || []
+        let keyword = $.trim(this.searchBox.getInputEleVal())
+        sugList.push({
+          name: `<a target="_blank"><div class="icon icon-add"></div>创建 <b>${keyword}</b></a>`,
+          class: 'suggestion-add-new-entry',
+          noicon: 'true',
+          type: 'new',
+          keyword
+        })
+        return sugList
       }
     })
   }
   _bind () {
     this.editor.contentContainer.addEventListener('click', this._onClick.bind(this))
+    this.editor.contentContainer.addEventListener('keyup', this._onKeyup.bind(this))
   }
+
+  _onKeyup (e) { // 按左右键进入内链的情况
+    if (e.keyCode !== 37 && e.keyCode !== 39) return
+    const rangeDom = window.getSelection().getRangeAt(0)
+    const domA = rangeDom.startContainer.parentNode
+    if (domA.nodeName == 'A' && domA.classList.contains('link')) {
+      this._selectA(rangeDom.startContainer.parentNode)
+    }
+  }
+
+  _selectA (node) {
+    const range = document.createRange()
+    range.selectNode(node)
+    var sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+    this.node = node
+    this.selection = window.getSelection().getRangeAt(0)
+    this._pop()
+    this._bindIcon()
+  }
+
   _onClick (event) {
     if (event.target.nodeName == 'A' && event.target.classList.contains('link')) {
-      // if (!event.target.getAttribute('href')) return
-      const range = document.createRange()
-      range.selectNode(event.target)
-      var sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
-      this.node = event.target
-      this.selection = window.getSelection().getRangeAt(0)
-      this._pop()
-      this._bindIcon()
+      this._selectA(event.target)
     } else {
       this._hide()
     }
@@ -112,8 +134,10 @@ export default class Link {
   _pop () {
     this._hide()
     let url = this.node.getAttribute('item-id')
-    if (url.indexOf('/') === 0 && url.indexOf('//') !== 0) {
-      url = frameHost ? this.frameHost + url : url
+    if (url.indexOf('/') === -1) {
+      url = this.frameHost ? this.frameHost + `/detail/${url}` : `/detail/${url}`
+    } else {
+      url = this.frameHost ? this.frameHost + url : url
     }
     this.$pop = $(templateEdit({
       href: url

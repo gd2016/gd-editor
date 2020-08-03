@@ -1,90 +1,43 @@
 import './index.less'
-import imagePlugin from './plugins/image'
-import videoPlugin from './plugins/video'
-import stylePlugin from './plugins/style'
-// import ulPlugin from './ul'
-import topicPlugin from './plugins/topic'
-import ulPlugin from './plugins/list'
+import plugins from './plugins/index'
 import xss from 'xss'
-import linkPlugin from './plugins/link'
 import { dealTopic } from './untils/topic'
+import Float from './plugins/float'
+import {
+  handleA,
+  topicFn
+} from './renderData'
+import {
+  setRange,
+  getParents,
+  getlastImg,
+  getOffset,
+  dataMap,
+  toCamelCase
+} from './untils/fn'
 export default class MEditor {
   constructor (props) {
     Object.assign(this, {
       container: null,
-      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic'],
+      toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
+      float: ['link'],
       plugins: [],
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
-      basePlugins: [{
-        constructor: imagePlugin,
-        name: 'image',
-        params: {
-          url: '/api/image/upload/v1',
-          formName: 'userfile'
-        }
-      }, {
-        constructor: videoPlugin,
-        name: 'video',
-        params: {
-          url: '/api/video/upload/v1',
-          formName: 'userfile'
-        }
-      }, {
-        constructor: stylePlugin,
-        name: 'h1',
-        params: {
-          type: 'h1',
-          label: '1级标题'
-        }
-      }, {
-        constructor: stylePlugin,
-        name: 'h2',
-        params: {
-          type: 'h2',
-          label: '2级标题'
-        }
-      }, {
-        constructor: ulPlugin,
-        name: 'ol',
-        params: {
-          label: '有序列表'
-        }
-
-      }, {
-        constructor: ulPlugin,
-        name: 'ul',
-        params: {
-          label: '无序列表'
-        }
-      }, {
-        constructor: stylePlugin,
-        name: 'refer',
-        params: {
-          type: 'refer',
-          label: '插入引用'
-        }
-      }, {
-        constructor: topicPlugin,
-        name: 'topic',
-        params: {
-          url: '/api/toppost/tag/search',
-          label: '插入话题'
-        }
-      }, {
-        constructor: linkPlugin,
-        name: 'link',
-        params: {
-          url: '/api/search/getSuggestion',
-          label: '插入链接'
-        }
-      }],
       minHeight: 200,
       maxHeight: 400000,
       content: '',
+      innerLinks: [],
+      frameHost: '__ALLHISTORY_HOSTNAME__',
+      replaceFn: (link) => {
+        return `<a href="${this.host}/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
+      },
+      topicFn,
+      handleText: (text) => xss(text),
       host: '__ALLHISTORY_HOSTNAME__',
       onReady (editor) {}
     }, props)
+    this.currentSelection = ''
     this.dataOutput = [] // 存储输出数据
     this.topicContent = '' // 存储话题内容
     this.linkArr = [] // 外链偏移量
@@ -101,47 +54,43 @@ export default class MEditor {
   }
 
   _initContent () {
-    if (this.content) this.setData(this.content)
+    if (this.content) this.setData(this.content, this.innerLinks)
   }
 
   _initPlugins () {
-    this._newPlugins(this.basePlugins)
-    this._newPlugins(this.plugins)
+    this._newPlugins()
+    this.float.length && this._initFloat()
   }
   /**
    * @function  加载插件
    * @param  {array}  [{ constructor: imagePlugin, name: 'image',output(node){} }]
    */
-  _newPlugins (plugins) {
-    if (plugins.length) {
-      plugins.forEach(plugin => {
-        const pluginName = this._toCamelCase(plugin.name)
-        if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
-          // plugin.type && plugin.constructor.setType(plugin.type)
-          this[pluginName] = new plugin.constructor({ name: plugin.name, editor: this, host: this.host, ...plugin.params })
-          this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
-            this[pluginName].initCommand()
-          }
-          this[pluginName].init && this[pluginName].init(this.editor)
-          if (this[pluginName].label) {
-            this.container.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
-          }
+  _newPlugins () {
+    this.toolbar.forEach(menu => {
+      const plugin = plugins[menu]
+      const pluginName = toCamelCase(plugin.name)
+      if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
+        this[pluginName] = new plugin.constructor({ frameHost: this.frameHost, name: plugin.name, editor: this, host: this.host, ...plugin.params })
+        this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
+          this[pluginName].initCommand()
         }
-      })
-    }
+        this[pluginName].init && this[pluginName].init(this.editor)
+        if (this[pluginName].label) {
+          this.container.querySelector(`.dls-${plugin.name}-icon-container`).setAttribute('title', this[pluginName].label)
+        }
+      }
+    })
   }
-  /**
-   * @function 主动定位光标
-   * @param  {node} node 节点
-   */
+
+  _initFloat () {
+    new Float({
+      editor: this,
+      tools: this.float
+    })
+  }
+
   _setRange (node) {
-    const range = document.createRange()
-    range.selectNodeContents(node)
-    range.collapse(false)
-    var sel = window.getSelection()
-    sel.removeAllRanges()
-    sel.addRange(range)
-    this.selection = sel.getRangeAt(0)
+    this.selection = setRange(node)
   }
   /**
    * @function 插入节点，用于插件
@@ -156,10 +105,12 @@ export default class MEditor {
     } else {
       node = domStr
     }
+
     if (!this.selection) { // 没有聚焦时进行的插入操作
       this.contentContainer.appendChild(node)
       return node
     }
+
     if (this.selection.endContainer.nodeName === 'BR') {
       const selection = this.selection.endContainer
       selection.parentNode.replaceChild(node, selection)
@@ -205,6 +156,7 @@ export default class MEditor {
     this.contentContainer.innerHTML = '<p><br></p>'
     this.contentContainer.classList.add('dls-m-editor-content')
     this.contentContainer.setAttribute('contenteditable', true)
+    this.contentContainer.setAttribute('spellcheck', false)
     this.contentContainer.style.minHeight = this.minHeight + 'px'
     this.contentContainer.style.maxHeight = this.maxHeight + 'px'
     this.box.appendChild(this.contentContainer)
@@ -214,30 +166,9 @@ export default class MEditor {
     this.contentContainer.addEventListener('keydown', this._keydown.bind(this))
     this.contentContainer.addEventListener('keyup', this._keyup.bind(this))
     this.contentContainer.addEventListener('click', this._click.bind(this))
+    this.contentContainer.addEventListener('blur', this._blur.bind(this))
   }
-  /**
-   * @function 将文本节点、元素节点转换为元素节点
-   * @param  {node} node 文本节点、元素节点
-   * @return {type} 元素节点
-   */
-  getNode (node) {
-    if (node.nodeName === '#text') return node.parentNode
-    return node
-  }
-  /**
-   * @function 判断节点是否在类名为className的父节点下
-   * @param  {type} node      文本节点、元素节点
-   * @param  {type} className class类名
-   */
-  getParents (node, className) {
-    while (!this.getNode(node).classList.contains('dls-m-editor-content')) {
-      if (this.getNode(node).classList.contains(className)) {
-        return true
-      }
-      node = node.parentNode
-    }
-    return false
-  }
+
   /**
    * @function 更新toolbar状态
    * @param  {string} 特定的tool类型
@@ -245,13 +176,15 @@ export default class MEditor {
    */
   updateToolbarStatus (type) {
     const selectNode = this.selection && this.selection.endContainer
-    if (this.getParents(selectNode, 'dls-image-capture') || this.getParents(selectNode, 'dls-video-capture')) {
+    if (getParents(selectNode, 'dls-image-capture') || getParents(selectNode, 'dls-video-capture')) {
       return this.toolbarDom.classList.add('disable')
-    } else {
-      this.toolbarDom.classList.remove('disable')
     }
+    this.toolbarDom.classList.remove('disable')
+
     if (!selectNode) return
+
     let className; let isContain; let node = selectNode
+
     if (selectNode.nodeName === '#text') {
       className = selectNode.parentNode.className
       isContain = selectNode.parentNode.classList.contains(type)
@@ -267,6 +200,8 @@ export default class MEditor {
       className = 'li'
       node = selectNode.parentNode
     }
+
+    // 下面更新toolbar状态，并返回，返回值用于其他插件判断是否处于激活状态
     if (!type) {
       if (className) {
         return this.updateTool(true, node)
@@ -284,11 +219,13 @@ export default class MEditor {
   /**
    * @function 将toolbar置为bool状态
    * @param  {Boolean}  是否激活
-   * @param  {type} 节当前光标所在节点
+   * @param  {Node} 当前光标所在节点，只用到了节点的className属性, 所以也可能为 {className: '}
+   * @return {bool} 状态是否激活
    */
   updateTool (bool, node) {
     const icons = this.toolbarDom.querySelectorAll('.icon-container')
     let className = node.className
+
     if (node.nodeName === 'OL' || node.nodeName === 'UL') {
       className = node.nodeName.toLowerCase()
     }
@@ -299,6 +236,13 @@ export default class MEditor {
     bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.add('active')
     !bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.remove('active')
     return bool
+  }
+
+  /**
+   * @function 记住selection
+   */
+  _blur () {
+    this.currentSelection = window.getSelection().getRangeAt(0)
   }
   /**
    * @function 主要针对backspace做的处理，用于删除图片块的数据
@@ -317,7 +261,7 @@ export default class MEditor {
         return e.preventDefault()
       }
 
-      if (this.selection.endContainer.nodeName !== '#text') {
+      if (this.selection.endContainer.nodeName !== '#text') { // 不是文本的时候选中块
         this._selectBlock(e)
       } else {
         if (this.selection.endOffset === 0) { // 在文本首位
@@ -325,8 +269,9 @@ export default class MEditor {
         }
       }
     } else {
-      if (e && e.code === 'Enter') {
+      if (e && e.code === 'Enter') { // 按回车键的处理
         const node = this.selection.endContainer
+        // 当前行没有任何文字且当前是H1,h2等状态时，自动清除当前状态（h1,h2,reder等）
         if (node.innerHTML === '<br>' && node.className && node.nodeName === 'P') {
           node.classList.remove(node.className)
           e.preventDefault()
@@ -403,9 +348,9 @@ export default class MEditor {
         this._setRange(node[node.length - 1])
         e.preventDefault()
       }
-    } else if (node.innerHTML === '<br>' && this._getlastImg(preDom)) {
+    } else if (node.innerHTML === '<br>' && getlastImg(preDom)) {
       node.parentNode.removeChild(node)
-      const block = this._getlastImg(preDom)
+      const block = getlastImg(preDom)
       if (block && block.classList && block.classList.contains('m-editor-block')) {
         this.block = block
         block.classList.add('active')
@@ -429,7 +374,7 @@ export default class MEditor {
     while (target) {
       if (target === this.contentContainer) {
         // 如果最后一个节点是图片，增加一个空行
-        if (this._getlastImg(this.contentContainer)) {
+        if (getlastImg(this.contentContainer)) {
           const p = document.createElement('p')
           p.innerHTML = '<br>'
           this.contentContainer.appendChild(p)
@@ -451,30 +396,11 @@ export default class MEditor {
     }
   }
   /**
-   * @function 判断最后一个节点是否为图片或者block块
-   */
-  _getlastImg (node) {
-    if (!node) return false
-    if (node.classList && (node.classList.contains('dls-image-capture') || node.classList.contains('dls-video-capture'))) {
-      return node
-    }
-    if (node.nodeName === '#text' && node.nodeValue === '') {
-      if (node.previousSibling && node.previousSibling.lastChild) {
-        return this._getlastImg(node.previousSibling.lastChild)
-      }
-      return true
-    }
-    if (node.nodeName === 'IMG') {
-      return node.parentNode
-    }
-    return this._getlastImg(node.lastChild)
-  }
-  /**
    * @function 只允许粘贴纯文本及图片，其他域图片会上传到allhistory
    */
   _bindPaste (e) {
     e.preventDefault()
-    if (this.getParents(this.selection.endContainer, 'dls-image-capture') || this.getParents(this.selection.endContainer, 'dls-video-capture')) {
+    if (getParents(this.selection.endContainer, 'dls-image-capture') || getParents(this.selection.endContainer, 'dls-video-capture')) {
       let txt = e.clipboardData.getData('text')
       let textNode = document.createTextNode(txt)
       return this.selection.insertNode(textNode)
@@ -494,7 +420,8 @@ export default class MEditor {
           objE.innerHTML = html
           const src = objE.childNodes[0].src
           if (src.indexOf('img.allhistory.com') !== -1) {
-            return `<div class="m-editor-block" ondragstart="return false"><img src=${src} /><p class="dls-image-capture" contenteditable="true"></p></div>`
+            const dataSrc = src.replace(/https:|http:/, '')
+            return `<div class="m-editor-block" ondragstart="return false"><img data-src=${dataSrc} src=${dataSrc} /><p class="dls-image-capture" contenteditable="true"></p></div>`
           } else {
             imgArr.push(src)
             return `<div class="m-editor-block loading" ondragstart="return false"><img class="img${self.id}" src='' /><p class="dls-image-capture" contenteditable="true"></p></div>`
@@ -522,14 +449,6 @@ export default class MEditor {
       }
       document.execCommand('insertHTML', false, imgStr)
     }
-  }
-  _toCamelCase (str) {
-    str = str.toLowerCase()
-    var arr = str.split('-')
-    for (var i = 1; i < arr.length; i++) {
-      arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].substring(1)
-    }
-    return arr.join('')
   }
 
   getData () {
@@ -610,7 +529,18 @@ export default class MEditor {
         text: xss(txt.innerText)
       })
     }
+    const textNode = node.querySelector('.dls-image-capture') || node.querySelector('.dls-video-capture')
+    Array.from(textNode.children).forEach(link => {
+      link.classList.contains('link') && this.linkArr.push({
+        word: link.text,
+        itemId: link.getAttribute('item-id'),
+        contentOffset: this.dataOutput.length - 1,
+        paramOffset: getOffset(link),
+        wordLength: link.text.length
+      })
+    })
   }
+
   /**
    * @function 处理文本
    * @param  {node} 节点
@@ -619,7 +549,7 @@ export default class MEditor {
   _handleText (node, isA) {
     let name, style
     let map = {}
-    if (node.nextSibling && node.nextSibling.tagName === 'A') { // 如果后面有a标签，只加内容但是不添加到content
+    if (node.nextSibling && (node.nextSibling.tagName === 'A' || node.nextSibling.nodeName === '#text')) { // 如果后面有a标签，只加内容但是不添加到content
       this.topicContent = this.topicContent + (isA ? node.text : node.data)
       return
     }
@@ -655,7 +585,7 @@ export default class MEditor {
     if (style === 'OL' || style === 'UL') {
       const ul = node.parentNode.parentNode
       const li = ul.querySelectorAll('li')
-      txt && this.dataOutput.push({
+      text && this.dataOutput.push({
         style,
         text: xss(text),
         postTags,
@@ -663,7 +593,7 @@ export default class MEditor {
         type: 'TEXT'
       })
     } else {
-      txt && this.dataOutput.push({
+      text && this.dataOutput.push({
         type: 'TEXT',
         text: xss(text),
         postTags,
@@ -699,7 +629,9 @@ export default class MEditor {
    * @param  {node} 节点
    */
   _handleBr (node) {
-    let nodeName = node.parentNode.parentNode.nodeName
+    const nodeName = node.parentNode.parentNode.nodeName
+    const prev = node.previousSibling && node.previousSibling.nodeName
+    const next = node.nextSibling && node.nextSibling.nodeName
     if (nodeName === 'UL' || nodeName === 'OL') {
       const ul = node.parentNode.parentNode
       const li = ul.querySelectorAll('li')
@@ -709,12 +641,10 @@ export default class MEditor {
         index: (nodeName === 'OL' || nodeName === 'UL') && Array.from(li).findIndex(li => li === node.parentNode) + 1,
         type: 'TEXT'
       })
-    } else if (node.previousSibling && node.previousSibling.nodeName === '#text') {
+    } else if (prev === '#text' || prev === 'A') {
       // br混在文本节点前面的情况
-    } else if (node.nextSibling && node.nextSibling.nodeName === '#text') {
+    } else if (next === '#text' || next === 'A') {
       // br混在文本节点后面的情况
-    } else if (node.nextSibling && node.nextSibling.nodeName === 'A') {
-      // 添加内链的时候会混一个br节点
     } else {
       this.dataOutput.push({
         type: 'TEXT',
@@ -742,77 +672,16 @@ export default class MEditor {
   innerText () {
     return this.contentContainer.innerText
   }
-  _dataMap (data, dataArray, index) {
-    let text = data.text
-    if (data.postTags && data.postTags.length) {
-      text = dealTopic(text, data.postTags)
-    }
-    const dataMap = {
-      IMAGE: `<div class="m-editor-block" ondragstart="return false"><img data-src=${data.url} src=${data.url} /><p class="dls-image-capture" contenteditable="true">${text || ''}</p></div>`,
-      VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video data-src=${data.url} controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${text || ''}</p></div>`,
-      TEXT: {
-        CONTENT: `<p>${text}</p>`,
-        H1: `<p class="h1">${text}</p>`,
-        H2: `<p class="h2">${text}</p>`,
-        REFER: `<p class="refer">${text}</p>`
-      }
-    }
-    if (data.type === 'TEXT') {
-      if (data.style === 'OL' || data.style === 'UL') {
-        const next = dataArray[index + 1]
-        if (data.index == 1) {
-          if (!next || data.style != next.style || next.index == 1) { // 只有一行ul或者ol的时候
-            return `<${data.style.toLowerCase()}><li>${data.text}</li></${data.style.toLowerCase()}>`
-          }
-          return `<${data.style.toLowerCase()}><li>${data.text}</li>`
-        } else if (!next || data.style != next.style || next.index == 1) {
-          return `<li>${data.text}</li></${data.style.toLowerCase()}>`
-        } else {
-          return `<li>${data.text}</li>`
-        }
-      } else {
-        return dataMap[data.type][data.style]
-      }
-    } else {
-      return dataMap[data.type]
-    }
-  }
   setData (dataArray, innerLinks) {
     let content = ''
-    if (innerLinks && innerLinks.length) {
-      let contentOffset = -1
-      let replaceArr = []
-      const replaceFn = (link) => {
-        return `<a class="link" item-id="${link.itemId}">${link.word}</a>`
-      }
-      innerLinks.forEach((link, index) => {
-        if (link.contentOffset != contentOffset && contentOffset != -1) {
-          if (!dataArray[contentOffset]) return
-          dataArray[contentOffset].text = dealTopic(dataArray[contentOffset].text, replaceArr, replaceFn)
-          replaceArr = [link]
-        } else {
-          replaceArr.push(link)
-        }
-        contentOffset = link.contentOffset
-      })
-      if (contentOffset !== -1 && dataArray[contentOffset]) {
-        dataArray[contentOffset].text = dealTopic(dataArray[contentOffset].text, replaceArr, replaceFn)
-      }
-    }
+    dataArray = handleA(dataArray, innerLinks)
     dataArray.forEach((data, index) => {
-      content += this._dataMap(data, dataArray, index)
+      data.text = dealTopic(this.handleText(data.text), data.postTags, {
+        topicFn: this.topicFn,
+        replaceFn: this.replaceFn
+      })
+      content += dataMap(data, index, dataArray)
     })
     this.contentContainer.innerHTML = content
-    this.contentContainer.querySelectorAll('a').forEach(node => {
-      node.style['-webkit-user-modify'] = 'read-only'
-    })
-  }
-  insertAfter (newElement, targetElement) {
-    var parent = targetElement.parentNode
-    if (parent.lastChild == targetElement) {
-      parent.appendChild(newElement)
-    } else {
-      parent.insertBefore(newElement, targetElement.nextSibling)
-    }
   }
 }

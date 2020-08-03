@@ -1,30 +1,33 @@
 import { dealTopic } from './untils/topic'
+import xss from 'xss'
 export {
-  renderText
+  renderText,
+  handleA
 }
 export default function (data, option) {
   option = Object.assign({
-    replaceFn: (link) => {
-      if (link.itemId.indexOf('/') !== -1) {
-        return `<a href="${link.itemId}" target="_blank">${link.word}</a>`
-      } else {
-        return `<a href="/detail/${link.itemId}" target="_blank" data-id="${link.itemId}">${link.word}</a>`
-      }
-    },
-    handleText: (text) => text,
+    replaceFn,
+    topicFn,
+    handleText: (text) => xss(text),
     innerLinks: []
   }, option)
-  const newData = handleA(data, option.innerLinks, option.replaceFn)
+  const newData = handleA(data, option.innerLinks)
+
   let html = '<div class="community-box">'
   newData.forEach(item => {
+    if (item.postTags && item.postTags.length) {
+      item.text = dealTopic(option.handleText(item.text), item.postTags, option)
+    } else {
+      item.text = option.handleText(item.text)
+    }
     if (item.type === 'TEXT') {
       const index = item.index && `index="${item.index}"`
-      html += `<p><span ${index || ''} class="${item.style ? item.style.toLowerCase() : ''}">${dealTopic(option.handleText(item.text), item.postTags)}</span></p>`
+      html += `<p><span ${index || ''} class="${item.style ? item.style.toLowerCase() : ''}">${item.text}</span></p>`
     }
     if (item.type === 'IMAGE') {
       html += `<div class="img-box"><img src=${item.url} />`
       if (item.text) {
-        html += `<p class="dls-image-capture">${option.handleText(item.text)}</p></div>`
+        html += `<p class="dls-image-capture">${item.text}</p></div>`
       } else {
         html += '</div>'
       }
@@ -32,7 +35,7 @@ export default function (data, option) {
     if (item.type === 'VIDEO') {
       html += `<div class="video-box"><video src=${item.url}  class="video" controls ></video>`
       if (item.text) {
-        html += `<p class="dls-image-capture">${option.handleText(item.text)}</p></div>`
+        html += `<p class="dls-image-capture">${item.text}</p></div>`
       } else {
         html += '</div>'
       }
@@ -42,7 +45,13 @@ export default function (data, option) {
   return html
 }
 
-function handleA (data, innerLinks, replaceFn) {
+/**
+ * @function 把内链的数据塞到postTags字段，与话题进行统一替换
+ * @param  {Array} data       源数据
+ * @param  {Array} innerLinks 内链
+ * @return {Array} 新数据
+ */
+function handleA (data, innerLinks) {
   const newData = Array.from(data)
   if (innerLinks && innerLinks.length) {
     let contentOffset = -1
@@ -51,7 +60,8 @@ function handleA (data, innerLinks, replaceFn) {
     innerLinks.forEach(link => {
       if (link.contentOffset != contentOffset && contentOffset != -1) {
         if (!newData[contentOffset]) return
-        newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
+        const postTags = newData[contentOffset].postTags || []
+        newData[contentOffset].postTags = postTags.concat(replaceArr)
         replaceArr = [link]
       } else {
         replaceArr.push(link)
@@ -59,7 +69,8 @@ function handleA (data, innerLinks, replaceFn) {
       contentOffset = link.contentOffset
     })
     if (contentOffset !== -1 && newData[contentOffset]) {
-      newData[contentOffset].text = dealTopic(newData[contentOffset].text, replaceArr, replaceFn)
+      const postTags = newData[contentOffset].postTags || []
+      newData[contentOffset].postTags = postTags.concat(replaceArr)
     }
   }
   return newData
@@ -88,4 +99,16 @@ function renderText (data, option = {}) {
   })
   html = html.substring(0, html.length - 1)
   return html
+}
+
+export const replaceFn = (link) => {
+  if (link.itemId.indexOf('/') !== -1) {
+    return `<a href="${link.itemId}" target="_blank">${link.word}</a>`
+  } else {
+    return `<a href="/detail/${link.itemId}" target="_blank" data-id="${link.itemId}">${link.word}</a>`
+  }
+}
+
+export const topicFn = (topicNode) => {
+  return `<a href="#" class="topic" topic-id="${topicNode.topicId}">${topicNode.text}</a>`
 }

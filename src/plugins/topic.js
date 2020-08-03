@@ -17,9 +17,35 @@ export default class Topic {
   }
 
   init () {
+    this.editor.contentContainer.addEventListener('click', this._onClick.bind(this))
+    this.editor.contentContainer.addEventListener('keyup', this._onKeyup.bind(this))
   }
+
+  _selectA (node) {
+    const range = document.createRange()
+    range.selectNode(node)
+    var sel = window.getSelection()
+    sel.removeAllRanges()
+    sel.addRange(range)
+  }
+
+  _onClick (event) {
+    if (event.target.nodeName == 'A' && event.target.classList.contains('topic')) {
+      this._selectA(event.target)
+    }
+  }
+
+  _onKeyup (e) { // 按左右键进入内链的情况
+    if (e.keyCode !== 37 && e.keyCode !== 39) return
+    const rangeDom = window.getSelection().getRangeAt(0)
+    const domA = rangeDom.startContainer.parentNode
+    if (domA.nodeName == 'A' && domA.classList.contains('topic')) {
+      this._selectA(rangeDom.startContainer.parentNode)
+    }
+  }
+
   initCommand () {
-    const selection = window.getSelection().getRangeAt(0)
+    let selection = window.getSelection().getRangeAt(0)
     this.$html = $(template())
     this.pop = new PopBox({
       title: '插入话题',
@@ -35,24 +61,18 @@ export default class Topic {
           })
         }
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
-          return new Alert({
-            duration: 2000,
-            position: 'top-center',
-            type: 'error',
-            text: '请聚焦编辑器后再插入'
-          })
-        } else {
-          const node = selection.commonAncestorContainer
-          const range = document.createRange()
-          if (node.innerHTML === '<br>') node.innerHTML = ''
-          range.setStart(node, selection.startOffset)
-          range.setEnd(node, selection.endOffset)
-          var sel = window.getSelection()
-          sel.removeAllRanges()
-          sel.addRange(range)
-          document.execCommand('insertHTML', false, `<a class="topic" topic-id="${this.topicId}">${this.name}</a>`)
+          selection = this.editor.currentSelection
         }
-        $('a.topic').css({ '-webkit-user-modify': 'read-only' })
+        selection.deleteContents()
+        const node = selection.commonAncestorContainer
+        const range = document.createRange()
+        if (node.innerHTML === '<br>') node.innerHTML = ''
+        range.setStart(node, selection.startOffset)
+        range.setEnd(node, selection.endOffset)
+        var sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+        document.execCommand('insertHTML', false, `<a href="#" class="topic" topic-id="${this.topicId}">${this.name}</a>`)
         this.pop.close()
       }
     })
