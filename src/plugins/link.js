@@ -72,6 +72,11 @@ export default class Link {
       suggestionUrl: this.host + this.url,
       historyName: null,
       absolute: true,
+      fetchConfig: {
+        encrypt: true,
+        fingerprint: true,
+        withCredentials: true
+      },
       defaultValue: this.name,
       domainName: '',
       noResultTip: true,
