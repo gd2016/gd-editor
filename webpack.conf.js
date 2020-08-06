@@ -65,12 +65,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'CTIME TEST',
       template: 'test/test.html'
-    }),
-    new CopyWebpackPlugin([{
-      from: path.resolve('./static'),
-      to: 'static',
-      ignore: ['.*']
-    }])
+    })
+    // new CopyWebpackPlugin([{
+    //   from: path.resolve('./static'),
+    //   to: 'static',
+    //   ignore: ['.*']
+    // }])
     // new I18nPlugin({
     //   output: path.join(__dirname, './src/i18n/output'),
     //   type: 'js',
