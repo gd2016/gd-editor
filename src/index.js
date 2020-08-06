@@ -9,6 +9,7 @@ import {
 } from './renderData'
 import {
   setRange,
+  setSelection,
   getParents,
   getlastImg,
   getOffset,
@@ -97,20 +98,22 @@ export default class MEditor {
    * @param  {string} domStr    html字符串
    */
   insertHtml (domStr) {
-    let objE, node
-    if (typeof domStr === 'string') {
-      objE = document.createElement('div')
-      objE.innerHTML = domStr
-      node = objE.childNodes[0]
-    } else {
-      node = domStr
-    }
+    if (document.activeElement !== this.contentContainer) setSelection(this.currentSelection)
+    const objE = document.createElement('div')
+    const code = Math.random().toString(36).substr(5)
+    objE.innerHTML = domStr
+    objE.childNodes[0].setAttribute('data-m', `m${code}`)
+    document.execCommand('insertHTML', false, objE.innerHTML)
+    const node = this.contentContainer.querySelector(`.m-editor-block[data-m=m${code}]`)
+    node.removeAttribute('data-m')
+    return node
+  }
 
+  insertNode (node) {
     if (!this.selection) { // 没有聚焦时进行的插入操作
       this.contentContainer.appendChild(node)
       return node
     }
-
     if (this.selection.endContainer.nodeName === 'BR') {
       const selection = this.selection.endContainer
       selection.parentNode.replaceChild(node, selection)
@@ -120,6 +123,7 @@ export default class MEditor {
     }
     return node
   }
+
   _initDom () {
     this._initContainer()
     this._initToolbar()

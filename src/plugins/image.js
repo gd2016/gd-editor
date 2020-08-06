@@ -55,7 +55,11 @@ export default class img {
     // return new Blob([u8arr],{type:mime});
   }
   initCommand () {
-    // return this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }))
+    const selection = this.editor.selection
+    if (selection.commonAncestorContainer.classList && selection.commonAncestorContainer.classList.contains('m-editor-block')) {
+      return new Alert({ type: 'error', text: '请聚焦文本位置再上传', position: 'top-center' })
+    }
+    // return console.log(this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' })))
     if (!this.file) {
       const self = this
       this.file = document.createElement('input')

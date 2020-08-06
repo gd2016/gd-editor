@@ -1,4 +1,7 @@
 import { PopBox, Alert } from '@portal/dls-ui'
+import {
+  setSelection
+} from '../untils/fn'
 import SearchBox from '@portal/dls-searchbox'
 const template = function () {
   return `<div class="link-search-box search-box">
@@ -52,13 +55,7 @@ export default class Link {
           })
         }
 
-        const node = selection.commonAncestorContainer
-        const range = document.createRange()
-        range.setStart(node, selection.startOffset)
-        range.setEnd(node, selection.endOffset)
-        var sel = window.getSelection()
-        sel.removeAllRanges()
-        sel.addRange(range)
+        setSelection(selection)
         document.execCommand('insertHTML', false, `<a href="/detail/${this.id}" class="link" item-id="${this.id}">${this.name}</a>`)
         this._hide()
         this.pop.close()

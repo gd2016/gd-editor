@@ -13,6 +13,17 @@ export const setRange = (node) => {
   return sel.getRangeAt(0)
 }
 
+export const setSelection = (selection) => {
+  const node = selection.commonAncestorContainer
+  const range = document.createRange()
+  if (node.innerHTML === '<br>') node.innerHTML = ''
+  range.setStart(node, selection.startOffset)
+  range.setEnd(node, selection.endOffset)
+  var sel = window.getSelection()
+  sel.removeAllRanges()
+  sel.addRange(range)
+}
+
 /**
    * @function 将文本节点、元素节点转换为元素节点
    * @param  {node} node 文本节点、元素节点

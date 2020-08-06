@@ -1,5 +1,8 @@
 import { PopBox, Alert } from '@portal/dls-ui'
 import SearchBox from '@portal/dls-searchbox'
+import {
+  setSelection
+} from '../untils/fn'
 const template = function () {
   return `<div class="topic-search-box search-box">
     <input type="text" class="link-text"  placeholder="输入话题名称"/>
@@ -63,15 +66,7 @@ export default class Topic {
         if ($(selection.endContainer).parents('.dls-m-editor-content').length < 1) {
           selection = this.editor.currentSelection
         }
-        selection.deleteContents()
-        const node = selection.commonAncestorContainer
-        const range = document.createRange()
-        if (node.innerHTML === '<br>') node.innerHTML = ''
-        range.setStart(node, selection.startOffset)
-        range.setEnd(node, selection.endOffset)
-        var sel = window.getSelection()
-        sel.removeAllRanges()
-        sel.addRange(range)
+        setSelection(selection)
         document.execCommand('insertHTML', false, `<a href="#" class="topic" topic-id="${this.topicId}">${this.name}</a>`)
         this.pop.close()
       }

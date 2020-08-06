@@ -35,7 +35,7 @@ export default class Style {
         } else {
           p.innerText = rang.toString()
           rang.deleteContents()
-          this.editor.insertHtml(p)
+          this.editor.insertNode(p)
         }
 
         this.editor._setRange(p)
