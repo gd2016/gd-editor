@@ -443,6 +443,7 @@ export default class MEditor {
       }
     })
     imgStr = imgStr.replace(/<p><\/p>/g, '').trim()
+    imgStr = imgStr.replace(/\n/g, '<p>')
     if (imgStr.indexOf('<img') !== -1) {
       document.execCommand('insertHTML', false, imgStr)
       this.image.replaceImg(imgArr, this.id)
@@ -450,7 +451,12 @@ export default class MEditor {
     } else {
       if (!imgStr) {
         imgStr = e.clipboardData.getData('text')
+        imgStr = imgStr.replace(/\n/g, '<p>')
       }
+      // const txtArr = imgStr.split('\n')
+      // imgStr = txtArr.map(txt => {
+      //   return `<p>${txt}</p>`
+      // }).join('')
       document.execCommand('insertHTML', false, imgStr)
     }
   }
@@ -684,6 +690,9 @@ export default class MEditor {
         topicFn: this.topicFn,
         replaceFn: this.replaceFn
       })
+      // if (data.type === 'TEXT' && data.text.endsWith('\n')) {
+      //   data.text = data.text.replace(/\n$/g, '\n')
+      // }
       content += dataMap(data, index, dataArray)
     })
     this.contentContainer.innerHTML = content
