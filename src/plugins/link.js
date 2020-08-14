@@ -65,6 +65,7 @@ export default class Link {
       $container: $(this.pop.content).find('.link-search-box'),
       input: 'input',
       autoFocus: true,
+      isInnerchain: true,
       suggestContainer: '.link-search-box-suggestions',
       suggestionUrl: this.host + this.url,
       historyName: null,
