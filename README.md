@@ -9,6 +9,8 @@
 
 ---
 
+**如果要禁用编辑功能， 直接在容器加入disabled-m-editor类名**
+
 ## Config
 
 | Key                | Default            | Description                                                           |
