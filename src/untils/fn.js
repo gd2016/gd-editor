@@ -130,7 +130,7 @@ export const dataMap = (data, index, dataArray) => {
         return `<li>${data.text}</li>`
       }
     } else {
-      return dataMap[data.type][data.style]
+      return dataMap[data.type][data.style || 'CONTENT']
     }
   } else {
     return dataMap[data.type]
