@@ -1,5 +1,7 @@
 import {
-  insertAfter
+  insertAfter,
+  getStatus,
+  activeTool
 } from '../untils/fn'
 export default class Style {
   constructor (props) {
@@ -44,28 +46,20 @@ export default class Style {
     }
   }
   initCommand () {
-    // if (!window.getSelection().isCollapsed) {
-    //   return this._replaceSelection()
-    // }
     const selectNode = this.editor.selection && this.editor.selection.endContainer
     if (!selectNode) return
-    this.onoff = !this.editor.updateToolbarStatus(this.type)
+    this.onoff = getStatus(this.type)
     if (this.onoff) {
-      if (selectNode.nodeName === '#text' && selectNode.parentNode.nodeName === 'P') { // 父节点添加type
-        this._setClass(selectNode.parentNode, this.type)
-        this.editor.updateTool(true, { className: this.type })
-      } else if (selectNode.nodeName === 'P') { // 只针对p标签，li标签return
-        this._setClass(selectNode, this.type)
-        this.editor.updateTool(true, { className: this.type })
-      }
+      document.execCommand('formatBlock', false, 'p')
     } else {
-      if (selectNode.nodeName === '#text') {
-        selectNode.parentNode.classList.remove(this.type)
-      } else if (selectNode.nodeName === 'P') {
-        selectNode.classList.remove(this.type)
+      if (selectNode.nodeName === '#text' && selectNode.parentNode.nodeName === 'LI' ||
+          selectNode.nodeName === 'LI') {
+        return
       }
-      this.editor.updateTool(false, { className: this.type })
+      if (this.type === 'refer') document.execCommand('formatBlock', false, 'BLOCKQUOTE')
+      else document.execCommand('formatBlock', false, this.type)
     }
+    activeTool(this.type, !this.onoff)
   }
   _setClass (dom, className) {
     const classList = dom.classList

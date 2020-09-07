@@ -145,3 +145,41 @@ export const insertAfter = (newElement, targetElement) => {
     parent.insertBefore(newElement, targetElement.nextSibling)
   }
 }
+
+/**
+ * @function updateStaus
+ * @param  {string} 插件名称
+ * @param  {boolean} 是否启用
+ */
+export const updateStatus = (pluginName, status) => {
+  const toolbar = document.querySelector('.toolbar')
+  const icon = toolbar.querySelector(`.dls-${pluginName}-icon-container`)
+  if (status) {
+    icon.classList.remove('disabled')
+  } else {
+    icon.classList.add('disabled')
+  }
+}
+
+export const activeTool = (pluginName, active) => {
+  const toolbar = document.querySelector('.toolbar')
+  const icon = toolbar.querySelector(`.dls-${pluginName}-icon-container`)
+  const icons = toolbar.querySelectorAll('.icon-container')
+  Array.from(icons).forEach(icon => {
+    icon.classList.remove('active')
+  })
+  if (!pluginName) return
+  active && icon.classList.add('active')
+  !active && icon.classList.remove('active')
+}
+
+/**
+ * @function 查看toolbar某个功能是否激活
+ * @return {boolean} true代表激活
+ */
+export const getStatus = (pluginName) => {
+  const toolbar = document.querySelector('.toolbar')
+  const icon = toolbar.querySelector(`.dls-${pluginName}-icon-container`)
+  if (icon.classList.contains('active')) return true
+  return false
+}

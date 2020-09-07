@@ -4,7 +4,8 @@ import stylePlugin from './style'
 import topicPlugin from './topic'
 import ulPlugin from './list'
 import linkPlugin from './link'
-
+import RedoPlugin from './redo'
+import UndoPlugin from './undo'
 const plugins = {
   image: {
     constructor: imagePlugin,
@@ -76,6 +77,14 @@ const plugins = {
       url: '/api/search/getSuggestionV3',
       label: '插入链接'
     }
+  },
+  redo: {
+    constructor: RedoPlugin,
+    name: 'redo'
+  },
+  undo: {
+    constructor: UndoPlugin,
+    name: 'undo'
   }
 }
 

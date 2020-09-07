@@ -1,3 +1,7 @@
+import {
+  activeTool
+} from '../untils/fn'
+
 export default class List {
   constructor (props) {
     Object.assign(this, {
@@ -7,15 +11,16 @@ export default class List {
     }, props)
   }
   initCommand () {
-    const selectNode = this.editor.selection && this.editor.selection.endContainer
-    const style = ['h1', 'h2', 'refer']
+    const selection = document.getSelection().getRangeAt(0)
+    const selectNode = selection && selection.endContainer
+    const style = ['H1', 'H2', 'BLOCKQUOTE']
     let isStyle
     if (selectNode.nodeName === '#text') {
-      isStyle = selectNode.parentNode.className
+      isStyle = selectNode.parentNode.nodeName
     } else {
-      isStyle = selectNode.className
+      isStyle = selectNode.nodeName
     }
-    if (!selectNode || (isStyle && style.indexOf(isStyle) !== -1)) return
+    if (!selectNode || (isStyle && style.indexOf(isStyle) !== -1)) return // 禁止和style不能互相切换
     const icon = this.editor.toolbarDom.querySelector(`.dls-${this.name}-icon-container`)
     const onoff = icon.classList.contains('active')
     if (this.name === 'ul') {
@@ -23,7 +28,7 @@ export default class List {
     } else {
       document.execCommand('insertOrderedList')
     }
-    this.editor.updateTool(true, { className: this.name })
+    activeTool(this.name, !onoff)
     this.editor._getSelection()
     onoff && icon.classList.remove('active')
     !onoff && icon.classList.add('active')

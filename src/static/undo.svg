@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="28px" viewBox="0 0 30 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>ghnow_editpage_back_icon</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="基础控件库" transform="translate(-300.000000, -1726.000000)">
+            <g id="基础控件" transform="translate(200.000000, 1457.000000)">
+                <g id="ghnow_editpage_back_icon" transform="translate(100.000000, 269.000000)">
+                    <rect id="矩形" x="0" y="0" width="30" height="28"></rect>
+                    <path d="M23,19 C21.8083078,17.0477237 19.7370445,15.7237904 14.6344555,15.7237904 C14.2437397,15.7237904 13.858112,15.7457321 13.4789604,15.7883667 L13.4789604,19 L7,13.9481784 L13.4790375,9 L13.4790375,11.7905193 C19.7370445,12.1592467 23,16.3289469 23,19 Z" id="路径" fill="#515151" fill-rule="nonzero"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

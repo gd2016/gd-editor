@@ -1,3 +1,6 @@
+@import './less/content.less';
+@import './less/float.less';
+@import './less/icon.less';
 .dls-m-editor{
   width: 100%;
   outline: none;
@@ -11,14 +14,16 @@
     text-align: justify;
     overflow: auto;
     font-family: auto; //修复回车带span标签bug
-    .h1,.h2{
+    h1,h2{
+      margin: 0;
       font-weight: bold;
       font-size: 18px;
     }
-    .h1{
+    h1{
       font-size: 20px;
     }
-    .refer{
+    blockquote{
+      margin: 0;
       border-left: 4px solid #ccc;
       padding-left: 10px;
       background: #F7F8FB;
@@ -39,7 +44,7 @@
       font-weight: normal;
     }
     p{
-      min-height: 28px;
+      min-height: 37px;
       margin: 0;
       padding: 0;
       font-weight: normal;
@@ -184,6 +189,9 @@
     }
   }
 }
+
+
+//话题、内链弹窗样式
 .topic-pop .pop-content{
   padding: 20px;
   .content{
@@ -192,237 +200,8 @@
     }
   }
 }
-.community-box{
-    margin-top: 10px;
-    text-align: justify;
-    line-height: 37px;
-    font-size: 17px;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    p{
-      min-height: 28px;
-      margin: 0;
-    }
-    a{
-      color: #0056e7;
-    }
-    .img-box,.video-box{
-      text-align: center;
-    }
-    .img,
-    .video {
-      max-width: 100%;
-      display: block;
-      margin: 0 auto;
-    }
-    .img{
-      width: 100%;
-      height: 100%;
-    }
-    .h1,.h2{
-      font-weight: bold;
-      font-size: 18px;
-    }
-    .h1{
-      font-size: 20px;
-    }
-    .refer{
-      border-left: 4px solid #ccc;
-      padding-left: 10px;
-      color: #6D6D6D;
-      background: #F7F8FB;
-      display: block;
-      margin-bottom: 5px;
-    }
-    .dls-image-capture{
-      outline: none;
-      border-top: 2px solid transparent;
-      white-space: initial;
-      font-size: 12px;
-      line-height: 18px;
-      text-align: center;
-      margin: 0;
-    }
-    ul,ol{
-      margin: 0;
-      padding-left: 20px;
-    }
-    .ol::before{
-      content: attr(index)'.';
-      margin-right: 2px;
-    }
-    .ul::before{
-      content: '';
-      border-radius: 50%;   
-      width: 5px;
-      height: 5px;
-      background: black;
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 5px;
-    }
-}
-.dls-editor-lite-edit-link,.dls-editor-across-edit-link {
-  z-index: 51;// 正文编辑，右侧拖动图标的z-index 为50,防止被覆盖，故这里设置为51 2019-1-21 14:00
-  position: fixed;
-  height: 30px;
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.14);
-  border-radius: 2px;
-  border: 1px solid rgba(222, 222, 222, 1);
-  padding: 0 12px;
-  z-index: 5;
-  .link-value{
-    display: inline-block;
-    max-width: 240px;
-    overflow: hidden;
-    margin-right: 10px;
-    text-overflow: ellipsis;
-    margin-top: 6px;
-    white-space: nowrap;
-  }
-  input {
-    line-height: 24px;
-    height: 24px;
-    margin-top:3px;
-    width: 240px;
-  }
-  .icon {
-    width: 10px;
-    cursor: pointer;
-    height: 10px;
-    margin-bottom: 3px;
-    margin-right : 5px;
-  }
-  
-  &:after {
-    content: '';
-    display: block;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px;
-    border-bottom-color: #fff;
-    margin-left: -5px;
-    position: absolute;
-    top: -10px;
-    left: 50%;
-  }
-
-  &:before {
-    content: '';
-    display: block;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px;
-    border-bottom-color: rgba(222, 222, 222, 1);
-    margin-left: -5px;
-    position: absolute;
-    top: -11px;
-    left: 50%;
-  }
-}
-.dls-m-floating-tools {
-  display: block;
-  position: fixed;
-  background: white;
-  box-shadow: 0 5px 24px 0 rgba(0, 0, 0, 0.14);
-  z-index: 100;
-  animation: show-float-tool 0.3s ease 0s;
-  animation-fill-mode: forwards;
-}
-
-@keyframes show-float-tool {
-  0%{
-    opacity: 0;
-    transform: translate(0, -10px);
-  }
-  100%{
-    opacity: 1;
-    transform: translate(0, 0);
-  }
-}
 
 
-.dls-m-floating-tools:after {
-  content: '';
-  display: block;
-  border-color: transparent;
-  border-style: solid;
-  border-width: 5px;
-  border-top-color: #fff;
-  margin-left: -5px;
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-}
-
-
-.dls-m-floating-tools .m_float_icon {
-  display: inline-block;
-  float: none;
-  margin: 0;
-  width: 16px;
-  height: 16px;
-}
-
-.m_float_icon_wrapper {
-  display: inline-block;
-  padding: 5px 5px;
-  margin: 5px;
-}
-
-.m_float_icon_wrapper:hover {
-  cursor: pointer;
-  background: rgb(216, 216, 216);
-}
-
-.dls-m-editor{
-  .loading{
-    background-image: url('./static/lazyloadImg.svg');
-  }
-  .dls-image-icon{
-    background: url('./static/img.svg');
-  }
-  .dls-h2-icon{
-    background: url('./static/h2.png');
-  }
-  .dls-h1-icon{
-    background: url('./static/h1.png');
-  }
-  .dls-refer-icon{
-    background: url('./static/refer.svg');
-  }
-  .dls-ol-icon{
-    background: url('./static/ol.svg');
-  }
-  .dls-ul-icon{
-    background: url('./static/ul.svg');
-  }
-  .dls-video-icon{
-    background: url('./static/video.svg');
-  }
-  .dls-topic-icon{
-    background: url('./static/topic.png');
-  }
-  .dls-link-icon{
-    background: url('./static/link.svg');
-  }
-  
-}
-.dls-editor-lite-edit-link{
-  .icon.icon-edit{
-    background-image: url('./static/edit.svg');
-  }
-  .icon.icon-delete-x{
-    background-image: url('./static/delete-x-white.svg');
-  }
-  
-}
-.dls-m-floating-tools{
-  .icon.dls-link-icon{
-    background: url('./static/link.svg');
-  }
-}
 
 .disabled-m-editor{
   background: white; 

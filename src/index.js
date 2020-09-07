@@ -11,10 +11,13 @@ import {
   setRange,
   setSelection,
   getParents,
+  insertAfter,
   getlastImg,
   getOffset,
   dataMap,
-  toCamelCase
+  toCamelCase,
+  getNode,
+  activeTool
 } from './untils/fn'
 export default class MEditor {
   constructor (props) {
@@ -71,7 +74,13 @@ export default class MEditor {
       const plugin = plugins[menu]
       const pluginName = toCamelCase(plugin.name)
       if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
-        this[pluginName] = new plugin.constructor({ frameHost: this.frameHost, name: plugin.name, editor: this, host: this.host, ...plugin.params })
+        this[pluginName] = new plugin.constructor({
+          frameHost: this.frameHost,
+          name: plugin.name,
+          editor: this,
+          host: this.host,
+          ...plugin.params
+        })
         this.container.querySelector(`.dls-${plugin.name}-icon-container`).onclick = () => {
           this[pluginName].initCommand()
         }
@@ -99,12 +108,16 @@ export default class MEditor {
    */
   insertHtml (domStr) {
     if (document.activeElement !== this.contentContainer) setSelection(this.currentSelection)
+
     const objE = document.createElement('div')
     const code = Math.random().toString(36).substr(5)
+
     objE.innerHTML = domStr
     objE.childNodes[0].setAttribute('data-m', `m${code}`)
     document.execCommand('insertHTML', false, objE.innerHTML)
+
     const node = this.contentContainer.querySelector(`.m-editor-block[data-m=m${code}]`)
+
     node.removeAttribute('data-m')
     return node
   }
@@ -178,7 +191,7 @@ export default class MEditor {
    * @param  {string} 特定的tool类型
    * @return {bool} 状态是否激活
    */
-  updateToolbarStatus (type) {
+  updateToolbarStatus () {
     const selectNode = this.selection && this.selection.endContainer
     if (getParents(selectNode, 'dls-image-capture') || getParents(selectNode, 'dls-video-capture')) {
       return this.toolbarDom.classList.add('disable')
@@ -187,61 +200,24 @@ export default class MEditor {
 
     if (!selectNode) return
 
-    let className; let isContain; let node = selectNode
-
-    if (selectNode.nodeName === '#text') {
-      className = selectNode.parentNode.className
-      isContain = selectNode.parentNode.classList.contains(type)
-      node = selectNode.parentNode
-      if (selectNode.parentNode.nodeName === 'LI') {
-        className = 'li'
-        node = selectNode.parentNode.parentNode
-      }
-    } else if (selectNode.nodeName === 'P') {
-      className = selectNode.className
-      isContain = selectNode.classList.contains(type)
-    } else if (selectNode.nodeName === 'LI') {
-      className = 'li'
-      node = selectNode.parentNode
-    }
-
-    // 下面更新toolbar状态，并返回，返回值用于其他插件判断是否处于激活状态
-    if (!type) {
-      if (className) {
-        return this.updateTool(true, node)
-      } else {
-        return this.updateTool(false, node)
-      }
-    } else {
-      if (isContain) {
-        return this.updateTool(true, node)
-      } else {
-        return this.updateTool(false, node)
-      }
+    let node = getNode(selectNode)
+    switch (node.nodeName) {
+      case 'LI':
+        node = node.parentNode
+        activeTool(node.localName, true)
+        break
+      case 'P':
+      case 'DIV':
+        activeTool(null, true)
+        break
+      case 'BLOCKQUOTE':
+        activeTool('refer', true)
+        break
+      default:
+        activeTool(node.localName, true)
+        break
     }
   }
-  /**
-   * @function 将toolbar置为bool状态
-   * @param  {Boolean}  是否激活
-   * @param  {Node} 当前光标所在节点，只用到了节点的className属性, 所以也可能为 {className: '}
-   * @return {bool} 状态是否激活
-   */
-  updateTool (bool, node) {
-    const icons = this.toolbarDom.querySelectorAll('.icon-container')
-    let className = node.className
-
-    if (node.nodeName === 'OL' || node.nodeName === 'UL') {
-      className = node.nodeName.toLowerCase()
-    }
-    Array.from(icons).forEach(icon => {
-      icon.classList.remove('active')
-    })
-    if (!this.toolbarDom.querySelector(`.dls-${className}-icon-container`)) return bool
-    bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.add('active')
-    !bool && this.toolbarDom.querySelector(`.dls-${className}-icon-container`).classList.remove('active')
-    return bool
-  }
-
   /**
    * @function 记住selection
    */
@@ -252,44 +228,43 @@ export default class MEditor {
    * @function 主要针对backspace做的处理，用于删除图片块的数据
    */
   _keydown (e) {
-    if (e.code === 'Backspace') {
-      // console.log(this.selection)
-      // return e.preventDefault()
-      if (this.block) { // 删除高亮块(没有使用removeChild是因为在文本中间插入图片再删除，文本节点会中断)
-        let parentNode = this.block.parentNode
-        this.block.previousSibling && this._setRange(this.block.previousSibling)
-        let afterDelete = parentNode.innerHTML.replace(this.block.outerHTML, '')
-        parentNode.innerHTML = afterDelete
-
-        this.block = null
-        return e.preventDefault()
-      }
-
-      if (this.selection.endContainer.nodeName !== '#text') { // 不是文本的时候选中块
-        this._selectBlock(e)
-      } else {
-        if (this.selection.endOffset === 0) { // 在文本首位
-          this._selectBlock(e)
+    switch (e.code) {
+      case 'Backspace':
+        if (this.block) { // 删除高亮块(没有使用removeChild是因为在文本中间插入图片再删除，文本节点会中断)
+          let parentNode = this.block.parentNode
+          parentNode.removeChild(this.block)
+          this.block = null
+          return e.preventDefault()
         }
-      }
-    } else {
-      if (e && e.code === 'Enter') { // 按回车键的处理
+        // e.preventDefault()
+        // return console.log(this.selection)
+        if (this.selection.endContainer.nodeName !== '#text') { // 不是文本的时候选中块
+          this._selectBlock(e)
+        } else {
+          if (this.selection.endOffset === 0) { // 在文本首位
+            this._selectBlock(e, 'text')
+          }
+        }
+        break
+      case 'Enter':
         const node = this.selection.endContainer
         // 当前行没有任何文字且当前是H1,h2等状态时，自动清除当前状态（h1,h2,reder等）
-        if (node.innerHTML === '<br>' && node.className && node.nodeName === 'P') {
-          node.classList.remove(node.className)
+        if (node.innerHTML === '<br>' && node.nodeName !== 'P' && node.nodeName !== 'LI') {
+          document.execCommand('formatBlock', false, 'p')
+          return e.preventDefault()
+        }
+        if (this.block) { // 选中块的时候，按回车会在后面增加一行
+          this.block.classList.remove('active')
+          const p = document.createElement('p')
+          p.innerHTML = '<br>'
+          insertAfter(p, this.block)
+          this._setRange(p)
           e.preventDefault()
+          this.block = null
         }
-      }
-      if (this.block) {
-        this.block.classList.remove('active')
-        if (!this.block.nextElementSibling) { // 图片后没有空行时，添加一个空行
-          const empty = document.createElement('br')
-          this.block.parentNode.appendChild(empty)
-          this._setRange(empty)
-        }
-        this.block = null
-      }
+        break
+      default:
+        break
     }
   }
   /**
@@ -320,7 +295,7 @@ export default class MEditor {
     }
 
     const node = this.selection.endContainer
-    if (node.nodeName === 'DIV' && node !== this.contentContainer) {
+    if (node.nodeName === 'DIV' && node !== this.contentContainer && !node.classList.contains('m-editor-block')) {
       const p = document.createElement('p')
       p.innerHTML = '<br>'
       node.parentNode.replaceChild(p, node)
@@ -332,38 +307,28 @@ export default class MEditor {
    * @function 按退格键时，视情况选中block块
    * @param  {type} 事件对象
    */
-  _selectBlock (e) {
+  _selectBlock (e, type) {
     const node = this.selection.endContainer
-    const preDom = this.selection.endContainer.previousSibling
-    if (preDom && preDom.classList && preDom.classList.contains('m-editor-block')) {
+    let preDom = this.selection.endContainer.previousSibling
+    if (type === 'text') {
+      preDom = this.selection.endContainer.parentNode.previousSibling
+    }
+    if (preDom && preDom.classList && preDom.classList.contains('m-editor-block')) { // 前面节点是块的情况
       this.block = preDom
       this.block.classList.add('active')
-      if (node.nodeName === 'BR') node.parentNode.removeChild(node)
+      if (node.nodeName === 'BR' || node.innerHTML === '<br>' || node.innerHTML === '') node.parentNode.removeChild(node)
       e.preventDefault()
-    } else if (this.selection.endContainer.children && this.selection.endContainer.children.length > 1) {
-      const node = this.selection.endContainer.children
-      const br = node[node.length - 1]
-      if (br.nodeName === 'BR') {
-        br.parentNode.removeChild(br)
-        if (node[node.length - 1].classList.contains('m-editor-block')) {
-          this.block = node[node.length - 1]
-          this.block.classList.add('active')
-        }
-        this._setRange(node[node.length - 1])
-        e.preventDefault()
-      }
-    } else if (node.innerHTML === '<br>' && getlastImg(preDom)) {
-      node.parentNode.removeChild(node)
-      const block = getlastImg(preDom)
-      if (block && block.classList && block.classList.contains('m-editor-block')) {
-        this.block = block
-        block.classList.add('active')
-      }
-
-      e.preventDefault()
-    } else {
     }
   }
+
+  _addP () {
+    const p = document.createElement('p')
+    p.innerHTML = '<br>'
+    this.contentContainer.appendChild(p)
+    this._setRange(p)
+    document.execCommand('insertHTML', false, '<p><br></p>')
+  }
+
   /**
    * @function 点击块的时候高亮显示，如果最后一个节点是块，则添加一个空行
    */
@@ -378,13 +343,7 @@ export default class MEditor {
     while (target) {
       if (target === this.contentContainer) {
         // 如果最后一个节点是图片，增加一个空行
-        if (getlastImg(this.contentContainer)) {
-          const p = document.createElement('p')
-          p.innerHTML = '<br>'
-          this.contentContainer.appendChild(p)
-          this._setRange(p)
-        }
-        return
+        if (getlastImg(this.contentContainer)) return this._addP()
       }
       if (target.classList.contains('m-editor-block')) {
         this.block = target
@@ -404,6 +363,11 @@ export default class MEditor {
    */
   _bindPaste (e) {
     e.preventDefault()
+    let files = e.clipboardData && e.clipboardData.files
+    if (files.length) {
+      return this.image.upload(files)
+    }
+
     if (getParents(this.selection.endContainer, 'dls-image-capture') || getParents(this.selection.endContainer, 'dls-video-capture')) {
       let txt = e.clipboardData.getData('text')
       let textNode = document.createTextNode(txt)
@@ -453,26 +417,10 @@ export default class MEditor {
         imgStr = e.clipboardData.getData('text')
         imgStr = imgStr.replace(/\n/g, '<p>')
       }
-      // const txtArr = imgStr.split('\n')
-      // imgStr = txtArr.map(txt => {
-      //   return `<p>${txt}</p>`
-      // }).join('')
       document.execCommand('insertHTML', false, imgStr)
     }
   }
 
-  getData () {
-    this.dataOutput = []
-    this.linkArr = []
-    return this._getData(this.contentContainer.childNodes)
-  }
-
-  getLink () {
-    this.dataOutput = []
-    this.linkArr = []
-    this._getData(this.contentContainer.childNodes)
-    return this.linkArr
-  }
   /**
    * FIXME： 待优化，图片节点需可配置
    * 私有方法，勿外部调用
@@ -485,26 +433,33 @@ export default class MEditor {
     }
     Array.from(nodes).forEach(node => {
       if (node.classList && node.classList.contains('m-editor-block')) {
-        this._handleBlock(node)
-      } else if (node.nodeName === '#text') {
-        this._handleText(node)
-      } else if (node.nodeName == 'BR') {
-        this._handleBr(node)
-      } else if (node.nodeName == 'P' && node.innerHTML === '') {
-        this.dataOutput.push({
-          type: 'TEXT',
-          text: '',
-          style: 'CONTENT'
-        })
-      } else if (node.nodeName === 'A') {
-        this._handleTagA(node)
-        if (!node.nextSibling || node.nextSibling.nodeName == 'BR') {
-          this._handleText(node, true)
-        } else {
-          this.topicContent = this.topicContent + node.text
-        }
-      } else {
-        this._getData(node.childNodes)
+        return this._handleBlock(node)
+      }
+      switch (node.nodeName) {
+        case '#text':
+          this._handleText(node)
+          break
+        case 'BR':
+          this._handleBr(node)
+          break
+        case 'A':
+          this._handleTagA(node)
+          if (!node.nextSibling || node.nextSibling.nodeName == 'BR') {
+            this._handleText(node, true)
+          } else {
+            this.topicContent = this.topicContent + node.text
+          }
+          break
+        case 'P':
+        default:
+          if (node.innerHTML === '') {
+            this.dataOutput.push({
+              type: 'TEXT',
+              text: '',
+              style: 'CONTENT'
+            })
+          } else this._getData(node.childNodes)
+          break
       }
     })
 
@@ -563,15 +518,16 @@ export default class MEditor {
       this.topicContent = this.topicContent + (isA ? node.text : node.data)
       return
     }
+
     if (node.parentNode.nodeName === 'A') return // 如果是A标签就跳过，因为已经对a标签做了处理
-    if (node.parentNode.nodeName === 'P') {
-      name = node.parentNode.className
-      map = {
-        h1: 'H1',
-        h2: 'H2',
-        refer: 'REFER'
-      }
+
+    name = node.parentNode.nodeName
+    map = {
+      H1: 'H1',
+      H2: 'H2',
+      BLOCKQUOTE: 'REFER'
     }
+
     if (node.parentNode.nodeName === 'LI') {
       name = node.parentNode.parentNode.nodeName.toLowerCase()
       map = {
@@ -583,6 +539,7 @@ export default class MEditor {
     const postTags = [] // 话题标签
     const txt = isA ? node.text : node.data
     const text = this.topicContent + txt
+
     this.topicArr.length && this.topicArr.forEach(element => {
       postTags.push({
         topicId: element.id,
@@ -619,13 +576,15 @@ export default class MEditor {
    */
   _handleTagA (node) {
     if (node.className == 'topic') { // 话题a标签
-      this.topicArr.push({
+      return this.topicArr.push({
         id: node.getAttribute('topic-id'),
         name: node.text,
         paramOffset: this.topicContent.length
       })
-    } else if (node.className == 'link') { // 内链的情况
-      this.linkArr.push({
+    }
+
+    if (node.className == 'link') { // 内链的情况
+      return this.linkArr.push({
         word: node.text,
         itemId: node.getAttribute('item-id'),
         contentOffset: this.dataOutput.length,
@@ -634,6 +593,7 @@ export default class MEditor {
       })
     }
   }
+
   /**
    * @function 处理br标签
    * @param  {node} 节点
@@ -663,6 +623,20 @@ export default class MEditor {
       })
     }
   }
+
+  getData () {
+    this.dataOutput = []
+    this.linkArr = []
+    return this._getData(this.contentContainer.childNodes)
+  }
+
+  getLink () {
+    this.dataOutput = []
+    this.linkArr = []
+    this._getData(this.contentContainer.childNodes)
+    return this.linkArr
+  }
+
   getLength (onlyText) {
     let length = 0
     this.getData()
@@ -676,12 +650,15 @@ export default class MEditor {
     })
     return length
   }
+
   innerHTML () {
     return this.contentContainer.innerHTML
   }
+
   innerText () {
     return this.contentContainer.innerText
   }
+
   setData (dataArray, innerLinks) {
     let content = ''
     dataArray = handleA(dataArray, innerLinks)
@@ -690,9 +667,6 @@ export default class MEditor {
         topicFn: this.topicFn,
         replaceFn: this.replaceFn
       })
-      // if (data.type === 'TEXT' && data.text.endsWith('\n')) {
-      //   data.text = data.text.replace(/\n$/g, '\n')
-      // }
       content += dataMap(data, index, dataArray)
     })
     this.contentContainer.innerHTML = content

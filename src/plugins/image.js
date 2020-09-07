@@ -59,7 +59,7 @@ export default class img {
     if (selection.commonAncestorContainer.classList && selection.commonAncestorContainer.classList.contains('m-editor-block')) {
       return new Alert({ type: 'error', text: '请聚焦文本位置再上传', position: 'top-center' })
     }
-    // return console.log(this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' })))
+    return console.log(this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' })))
     if (!this.file) {
       const self = this
       this.file = document.createElement('input')
@@ -69,13 +69,13 @@ export default class img {
       this.file.accept = '.jpg,.jpeg,.png,.gif'
       this.file.click()
       this.file.onchange = function (e) {
-        self._upload(this.files)
+        self.upload(this.files)
       }
     } else {
       this.file.click()
     }
   }
-  _upload (files) {
+  upload (files) {
     Array.from(files).forEach((file, index) => {
       if (this[file.name + index]) return
       let formData = new FormData()
@@ -105,7 +105,7 @@ export default class img {
         this[file.name + index].parentNode.removeChild(this[file.name + index])
         this[file.name + index] = ''
       }).finally(() => {
-        this.file.value = ''
+        if (this.file) this.file.value = ''
       })
     })
   }

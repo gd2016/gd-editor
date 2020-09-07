@@ -1,0 +1,72 @@
+//渲染内容样式
+
+.community-box{
+  margin-top: 10px;
+  text-align: justify;
+  line-height: 37px;
+  font-size: 17px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  p{
+    min-height: 28px;
+    margin: 0;
+  }
+  a{
+    color: #0056e7;
+  }
+  .img-box,.video-box{
+    text-align: center;
+  }
+  .img,
+  .video {
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+  }
+  .img{
+    width: 100%;
+    height: 100%;
+  }
+  .h1,.h2{
+    font-weight: bold;
+    font-size: 18px;
+  }
+  .h1{
+    font-size: 20px;
+  }
+  .refer{
+    border-left: 4px solid #ccc;
+    padding-left: 10px;
+    color: #6D6D6D;
+    background: #F7F8FB;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .dls-image-capture{
+    outline: none;
+    border-top: 2px solid transparent;
+    white-space: initial;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    margin: 0;
+  }
+  ul,ol{
+    margin: 0;
+    padding-left: 20px;
+  }
+  .ol::before{
+    content: attr(index)'.';
+    margin-right: 2px;
+  }
+  .ul::before{
+    content: '';
+    border-radius: 50%;   
+    width: 5px;
+    height: 5px;
+    background: black;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+  }
+}
