@@ -6,6 +6,7 @@ import ulPlugin from './list'
 import linkPlugin from './link'
 import RedoPlugin from './redo'
 import UndoPlugin from './undo'
+import JustifyPlugin from './justify'
 const plugins = {
   image: {
     constructor: imagePlugin,
@@ -76,6 +77,27 @@ const plugins = {
     params: {
       url: '/api/search/getSuggestionV3',
       label: '插入链接'
+    }
+  },
+  justifyLeft: {
+    constructor: JustifyPlugin,
+    name: 'justifyLeft',
+    params: {
+      label: '左对齐'
+    }
+  },
+  justifyCenter: {
+    constructor: JustifyPlugin,
+    name: 'justifyCenter',
+    params: {
+      label: '居中对齐'
+    }
+  },
+  justifyRight: {
+    constructor: JustifyPlugin,
+    name: 'justifyRight',
+    params: {
+      label: '右对齐'
     }
   },
   redo: {

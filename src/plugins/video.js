@@ -48,7 +48,7 @@ export default class img {
       if (this[file.name + index]) return
       let formData = new FormData()
       formData.append(this.formName, file)
-      this[file.name + index] = this.editor.insertHtml(template())
+      this[file.name + index] = this.editor.insertHtml(template(), true)
       Service.saveVideo(this.host + this.url, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'

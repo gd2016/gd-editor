@@ -170,11 +170,9 @@ export default class Link {
       $(window).off('scroll.lite-link-edit')
     }
   }
-  _deleteLink () {
-    let text = this.node.innerText
-    let parentNode = this.node.parentNode
-    let afterDelete = parentNode.innerHTML.replace(this.node.outerHTML, text)
-    parentNode.innerHTML = afterDelete
+  _deleteLink (e) {
+    setSelection(this.selection)
+    document.execCommand('unlink')
     this._hide()
   }
   _editLink (event) {

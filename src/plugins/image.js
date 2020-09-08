@@ -59,7 +59,7 @@ export default class img {
     if (selection.commonAncestorContainer.classList && selection.commonAncestorContainer.classList.contains('m-editor-block')) {
       return new Alert({ type: 'error', text: '请聚焦文本位置再上传', position: 'top-center' })
     }
-    return console.log(this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' })))
+    // return console.log(this.editor.insertHtml(template({ src: 'https://pic.allhistory.com/T1vRxCBXxT1RCvBVdK.jpeg?ch=244&cw=268&cx=0&cy=4&q=50&w=500&h=500' }), true))
     if (!this.file) {
       const self = this
       this.file = document.createElement('input')
@@ -80,7 +80,7 @@ export default class img {
       if (this[file.name + index]) return
       let formData = new FormData()
       formData.append(this.formName, file)
-      this[file.name + index] = this.editor.insertHtml(template({ src: '' }))
+      this[file.name + index] = this.editor.insertHtml(template({ src: '' }), true)
       Service.saveImage(this.host + this.url, formData).then(res => {
         if (res.code === 200) {
           const img = document.createElement('img')

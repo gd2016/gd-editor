@@ -105,13 +105,15 @@ export default class MEditor {
   /**
    * @function 插入节点，用于插件
    * @param  {string} domStr    html字符串
+   * @param  {boolean} isBr     是否需要添加一个空行
    */
-  insertHtml (domStr) {
+  insertHtml (domStr, isBr) {
     if (document.activeElement !== this.contentContainer) setSelection(this.currentSelection)
 
     const objE = document.createElement('div')
     const code = Math.random().toString(36).substr(5)
 
+    domStr = isBr ? domStr + '<p><br/></p>' : domStr
     objE.innerHTML = domStr
     objE.childNodes[0].setAttribute('data-m', `m${code}`)
     document.execCommand('insertHTML', false, objE.innerHTML)
@@ -119,6 +121,11 @@ export default class MEditor {
     const node = this.contentContainer.querySelector(`.m-editor-block[data-m=m${code}]`)
 
     node.removeAttribute('data-m')
+    const snode = node.nextElementSibling || node.previousElementSibling
+
+    snode && setRange(snode)
+
+    this._getSelection()
     return node
   }
 
@@ -206,6 +213,7 @@ export default class MEditor {
         node = node.parentNode
         activeTool(node.localName, true)
         break
+      case 'A': break
       case 'P':
       case 'DIV':
         activeTool(null, true)
@@ -228,9 +236,12 @@ export default class MEditor {
    * @function 主要针对backspace做的处理，用于删除图片块的数据
    */
   _keydown (e) {
+    const dom = this.selection.startContainer
+
     switch (e.code) {
       case 'Backspace':
-        if (this.block) { // 删除高亮块(没有使用removeChild是因为在文本中间插入图片再删除，文本节点会中断)
+        // if (dom.classList && dom.classList.contains('dls-image-capture')) return e.preventDefault()
+        if (this.block) {
           let parentNode = this.block.parentNode
           parentNode.removeChild(this.block)
           this.block = null
@@ -247,9 +258,8 @@ export default class MEditor {
         }
         break
       case 'Enter':
-        const node = this.selection.endContainer
         // 当前行没有任何文字且当前是H1,h2等状态时，自动清除当前状态（h1,h2,reder等）
-        if (node.innerHTML === '<br>' && node.nodeName !== 'P' && node.nodeName !== 'LI') {
+        if (dom.innerHTML === '<br>' && dom.nodeName !== 'P' && dom.nodeName !== 'LI') {
           document.execCommand('formatBlock', false, 'p')
           return e.preventDefault()
         }
@@ -259,6 +269,8 @@ export default class MEditor {
           p.innerHTML = '<br>'
           insertAfter(p, this.block)
           this._setRange(p)
+          document.execCommand('insertParagraph') // 为了能够撤销
+          p.parentNode.removeChild(p)
           e.preventDefault()
           this.block = null
         }
@@ -287,7 +299,7 @@ export default class MEditor {
         return e.preventDefault()
       }
       const span = this.contentContainer.querySelector('span')
-      if (span) {
+      if (span) { // 按删除键 h1标签和p标签混合时会有span标签，需替换掉
         const parentNode = span.parentNode
         let afterDelete = parentNode.innerHTML.replace(span.outerHTML, span.innerHTML)
         parentNode.innerHTML = afterDelete
@@ -326,7 +338,8 @@ export default class MEditor {
     p.innerHTML = '<br>'
     this.contentContainer.appendChild(p)
     this._setRange(p)
-    document.execCommand('insertHTML', false, '<p><br></p>')
+    document.execCommand('insertParagraph')
+    p.parentNode.removeChild(p)
   }
 
   /**
@@ -399,13 +412,14 @@ export default class MEditor {
             'header', 'section', 'footer', 'aside', 'main', 'article', 'blockquote', 'figure',
             'figcaption', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd'
           ]
-          if (blockTag.indexOf(tag) !== -1) {
+          if (html.indexOf('<div class="para"') !== -1 || blockTag.indexOf(tag) !== -1) {
             if (options.isClosing) return '</p>'
             return '<p>'
           }
         }
       }
     })
+    // return console.log(imgStr)
     imgStr = imgStr.replace(/<p><\/p>/g, '').trim()
     imgStr = imgStr.replace(/\n/g, '<p>')
     if (imgStr.indexOf('<img') !== -1) {
