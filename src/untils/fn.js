@@ -111,9 +111,9 @@ export const dataMap = (data, index, dataArray) => {
     VIDEO: `<div class="m-editor-block dls-video-box" ondragstart="return false"><video data-src=${data.url} controls src=${data.url} /></video><p class="dls-video-capture" contenteditable="true">${text || ''}</p></div>`,
     TEXT: {
       CONTENT: `<p>${text}</p>`,
-      H1: `<p class="h1">${text}</p>`,
-      H2: `<p class="h2">${text}</p>`,
-      REFER: `<p class="refer">${text}</p>`
+      H1: `<h1>${text}</h1>`,
+      H2: `<h2>${text}</h2>`,
+      REFER: `<blockquote>${text}</blockquote>`
     }
   }
   if (data.type === 'TEXT') {

@@ -65,6 +65,9 @@ document.querySelector('#setData').addEventListener('click', () => {
   }]
   editor.setData([
     { type: 'IMAGE', text: '123', url: '//img.allhistory.com/5ed0f1ea28b210674be63c81.png' },
+    { type: 'TEXT', text: '1233', style: 'H1' },
+    { type: 'TEXT', text: '这是👌h2标题', style: 'H2' },
+    { type: 'TEXT', text: '这是引用😆', style: 'REFER' },
     { style: 'UL',
       text: '1212#2#212122,4,5-三氯苯氧乙酸',
       index: '1',
