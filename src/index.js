@@ -17,7 +17,8 @@ import {
   dataMap,
   toCamelCase,
   getNode,
-  activeTool
+  activeTool,
+  updateStatus
 } from './untils/fn'
 export default class MEditor {
   constructor (props) {
@@ -126,6 +127,8 @@ export default class MEditor {
     snode && setRange(snode)
 
     this._getSelection()
+
+    updateStatus('undo', true)
     return node
   }
 
@@ -200,7 +203,7 @@ export default class MEditor {
    */
   updateToolbarStatus () {
     const selectNode = this.selection && this.selection.endContainer
-    if (getParents(selectNode, 'dls-image-capture') || getParents(selectNode, 'dls-video-capture')) {
+    if (getParents(selectNode, 'm-editor-block')) {
       return this.toolbarDom.classList.add('disable')
     }
     this.toolbarDom.classList.remove('disable')
@@ -237,10 +240,9 @@ export default class MEditor {
    */
   _keydown (e) {
     const dom = this.selection.startContainer
-
     switch (e.code) {
       case 'Backspace':
-        // if (dom.classList && dom.classList.contains('dls-image-capture')) return e.preventDefault()
+        if (this._isCapture()) return e.preventDefault()
         if (this.block) {
           let parentNode = this.block.parentNode
           parentNode.removeChild(this.block)
@@ -258,6 +260,7 @@ export default class MEditor {
         }
         break
       case 'Enter':
+        if (getNode(dom).classList && getNode(dom).classList.contains('dls-image-capture')) return e.preventDefault()
         // 当前行没有任何文字且当前是H1,h2等状态时，自动清除当前状态（h1,h2,reder等）
         if (dom.innerHTML === '<br>' && dom.nodeName !== 'P' && dom.nodeName !== 'LI') {
           document.execCommand('formatBlock', false, 'p')
@@ -279,6 +282,13 @@ export default class MEditor {
         break
     }
   }
+
+  _isCapture () {
+    const dom = this.selection.startContainer
+    if (getNode(dom).classList && getNode(dom).classList.contains('dls-image-capture') && this.selection.startOffset == 0) return true
+    return false
+  }
+
   /**
    * @function 获取selection
    */
@@ -286,6 +296,10 @@ export default class MEditor {
     const selection = window.getSelection()
     if (selection.type !== 'None') {
       this.selection = selection.getRangeAt(0)
+    }
+    const dom = this.selection.startContainer
+    if (dom && dom.classList && dom.classList.contains('m-editor-block')) {
+      setRange(dom.querySelector('p'))
     }
   }
   /**
@@ -307,6 +321,12 @@ export default class MEditor {
     }
 
     const node = this.selection.endContainer
+
+    if (getNode(node).classList && getNode(node).classList.contains('dls-image-capture') && this.block) {
+      this.block.classList.remove('active')
+      this.block = null
+    }
+
     if (node.nodeName === 'DIV' && node !== this.contentContainer && !node.classList.contains('m-editor-block')) {
       const p = document.createElement('p')
       p.innerHTML = '<br>'
@@ -328,7 +348,10 @@ export default class MEditor {
     if (preDom && preDom.classList && preDom.classList.contains('m-editor-block')) { // 前面节点是块的情况
       this.block = preDom
       this.block.classList.add('active')
-      if (node.nodeName === 'BR' || node.innerHTML === '<br>' || node.innerHTML === '') node.parentNode.removeChild(node)
+      if (node.nodeName === 'BR' || node.innerHTML === '<br>' || node.innerHTML === '') {
+        document.execCommand('delete')
+        //  node.parentNode.removeChild(node)
+      }
       e.preventDefault()
     }
   }
