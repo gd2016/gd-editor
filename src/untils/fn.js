@@ -1,4 +1,4 @@
-
+import xss from 'xss'
 /**
    * @function 主动定位光标
    * @param  {node} node 节点
@@ -182,4 +182,8 @@ export const getStatus = (pluginName) => {
   const icon = toolbar.querySelector(`.dls-${pluginName}-icon-container`)
   if (icon.classList.contains('active')) return true
   return false
+}
+
+export const xssfilter = (text) => {
+  return xss(text).replace(/\ufffc/g, '')
 }

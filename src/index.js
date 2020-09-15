@@ -9,6 +9,7 @@ import {
 } from './renderData'
 import {
   setRange,
+  xssfilter,
   setSelection,
   getParents,
   insertAfter,
@@ -38,7 +39,7 @@ export default class MEditor {
         return `<a href="${this.host}/detail/${link.itemId}" class="link" item-id="${link.itemId}">${link.word}</a>`
       },
       topicFn,
-      handleText: (text) => xss(text),
+      handleText: (text) => xssfilter(text),
       host: '__ALLHISTORY_HOSTNAME__',
       onReady (editor) {}
     }, props)
@@ -518,7 +519,7 @@ export default class MEditor {
       this.dataOutput.push({
         type: 'VIDEO',
         url: src,
-        text: xss(txt.innerText)
+        text: xssfilter(txt.innerText)
       })
     } else {
       const img = node.querySelector('img')
@@ -528,7 +529,7 @@ export default class MEditor {
         url: img.getAttribute('data-src'),
         height: img.naturalHeight,
         width: img.naturalWidth,
-        text: xss(txt.innerText)
+        text: xssfilter(txt.innerText)
       })
     }
     const textNode = node.querySelector('.dls-image-capture') || node.querySelector('.dls-video-capture')
@@ -585,13 +586,12 @@ export default class MEditor {
         paramOffset: element.paramOffset
       })
     })
-
     if (style === 'OL' || style === 'UL') {
       const ul = node.parentNode.parentNode
       const li = ul.querySelectorAll('li')
       text && this.dataOutput.push({
         style,
-        text: xss(text),
+        text: xssfilter(text),
         postTags,
         index: Array.from(li).findIndex(li => li === node.parentNode) + 1,
         type: 'TEXT'
@@ -599,7 +599,7 @@ export default class MEditor {
     } else {
       text && this.dataOutput.push({
         type: 'TEXT',
-        text: xss(text),
+        text: xssfilter(text),
         postTags,
         style
       })
