@@ -155,9 +155,9 @@ export const updateStatus = (pluginName, status) => {
   const toolbar = document.querySelector('.toolbar')
   const icon = toolbar.querySelector(`.dls-${pluginName}-icon-container`)
   if (status) {
-    icon.classList.remove('disabled')
+    icon && icon.classList.remove('disabled')
   } else {
-    icon.classList.add('disabled')
+    icon && icon.classList.add('disabled')
   }
 }
 
