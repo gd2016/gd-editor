@@ -54,7 +54,7 @@ module.exports = {
     port: port,
     publicPath: '/',
     proxy: {
-      '/api': 'http://10.4.40.168'
+      '/api': 'http://10.4.40.54'
     },
     after (app) {
       console.log(`Your application is running here: http://localhost:${port}`)

@@ -89,8 +89,8 @@ export const getOffset = (node) => {
   return offset
 }
 
-export const getLength = (node, fir) => {
-  let length = node.nodeName == '#text' ? node.length : node.text.length
+export const getLength = (node) => {
+  let length = node.nodeName == '#text' ? node.length : node.textContent.length
   if (node.previousSibling) {
     length += getLength(node.previousSibling)
   }

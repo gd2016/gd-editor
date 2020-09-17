@@ -243,7 +243,7 @@ export default class MEditor {
     const dom = this.selection.startContainer
     switch (e.code) {
       case 'Backspace':
-        if (this._isCapture()) return e.preventDefault()
+        if (this._isCapture() && this.selection.startOffset == 0) return e.preventDefault()
         if (this.block) {
           let parentNode = this.block.parentNode
           parentNode.removeChild(this.block)
@@ -261,7 +261,7 @@ export default class MEditor {
         }
         break
       case 'Enter':
-        if (getNode(dom).classList && getNode(dom).classList.contains('dls-image-capture')) return e.preventDefault()
+        if (this._isCapture()) return e.preventDefault()
         // 当前行没有任何文字且当前是H1,h2等状态时，自动清除当前状态（h1,h2,reder等）
         if (dom.innerHTML === '<br>' && dom.nodeName !== 'P' && dom.nodeName !== 'LI') {
           document.execCommand('formatBlock', false, 'p')
@@ -286,7 +286,7 @@ export default class MEditor {
 
   _isCapture () {
     const dom = this.selection.startContainer
-    if (getNode(dom).classList && getNode(dom).classList.contains('dls-image-capture') && this.selection.startOffset == 0) return true
+    if (getParents(dom, 'dls-image-capture') || getParents(dom, 'dls-video-capture')) return true
     return false
   }
 
@@ -323,7 +323,7 @@ export default class MEditor {
 
     const node = this.selection.endContainer
 
-    if (getNode(node).classList && getNode(node).classList.contains('dls-image-capture') && this.block) {
+    if (this._isCapture() && this.block) {
       this.block.classList.remove('active')
       this.block = null
     }
@@ -405,7 +405,7 @@ export default class MEditor {
       return this.image.upload(files)
     }
 
-    if (getParents(this.selection.endContainer, 'dls-image-capture') || getParents(this.selection.endContainer, 'dls-video-capture')) {
+    if (this._isCapture()) {
       let txt = e.clipboardData.getData('text')
       let textNode = document.createTextNode(txt)
       return this.selection.insertNode(textNode)
