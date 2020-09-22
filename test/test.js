@@ -83,3 +83,7 @@ document.querySelector('#setData').addEventListener('click', () => {
     { type: 'TEXT', text: '12', style: 'REFER' }
   ], innerLinks)
 })
+
+document.getElementById('exec').addEventListener('click', () => {
+  editor.execcommand('link')
+})

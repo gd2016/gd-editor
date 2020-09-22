@@ -28,6 +28,7 @@ export default class MEditor {
       toolbar: ['image', 'video', 'h1', 'h2', 'refer', 'ol', 'ul', 'topic', 'link'],
       float: ['link'],
       plugins: [],
+      pluginParams: {},
       id: 0, // 粘贴图片时的id标识
       maxlength: 0, // 字数限制，前端只做提示，没有限制提交
       minHeight: 200,
@@ -74,6 +75,10 @@ export default class MEditor {
   _newPlugins () {
     this.toolbar.forEach(menu => {
       const plugin = plugins[menu]
+      plugin.params = {
+        ...plugin.params,
+        ...this.pluginParams[menu]
+      }
       const pluginName = toCamelCase(plugin.name)
       if (!this[pluginName] && this.toolbar.indexOf(plugin.name) !== -1) {
         this[pluginName] = new plugin.constructor({
@@ -92,6 +97,11 @@ export default class MEditor {
         }
       }
     })
+  }
+
+  execcommand (tool) {
+    const pluginName = toCamelCase(tool)
+    this[pluginName].initCommand()
   }
 
   _initFloat () {

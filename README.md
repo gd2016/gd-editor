@@ -24,7 +24,7 @@
 | host |   '__ALLHISTORY_HOSTNAME__'   |  图片上传接口host  |
 | onReady |  (editor){}   | 编辑器初始化回调   |
 | maxlength | 0 | 字数限制，前端只做提示，没有限制提交 |
-
+| pluginParams| {} |  各个插件的额外参数 | 
 
 ## Method
 
@@ -35,7 +35,7 @@
 | getData |     |    | 获取editor的内容  |    
 | getLink |     |    | 获取editor内链            |    
 | insertHtml |  html字符串  |  该节点  | 插入editor节点 | 
-
+| execcommand | toolbar |    toolbar名称   |   根据toolbar名称主动调用一个插件功能      |
 
 ## renderData  renderText
 
@@ -83,6 +83,12 @@ document.querySelector('.content').innerText = text
 import test from '@portal/dls-m-editor'
 const editor = new test({
   container: document.querySelector('#editor-area'),
+  pluginParams: { //修改插件参数，，例如修改话题的sug接口地址
+    topic: { //键值 与toolbar对应  具体源代码查看/pugins/index.js
+      url: '/api/toppost/tag/search',
+      label: '插入话题'
+    }
+  },
   content: [{
     type: 'TEXT',
     text: '12312'
