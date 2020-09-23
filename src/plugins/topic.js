@@ -15,6 +15,9 @@ export default class Topic {
       editor: '',
       label: '话题',
       host: '',
+      key: 'tag',
+      method: 'get',
+      params: {},
       url: ''
     }, props)
   }
@@ -80,11 +83,12 @@ export default class Topic {
       suggestionUrl: this.url,
       historyName: null,
       absolute: true,
-      key: 'tag',
-      method: 'get',
+      key: this.key,
+      method: this.method,
       params: {
         page: '1',
-        size: '10'
+        size: '10',
+        ...this.params
       },
       domainName: '',
       emitFocusEvent: () => {
