@@ -90,7 +90,7 @@ export default class Topic {
         size: '10',
         ...this.params
       },
-      domainName: '',
+      domainName: this.host,
       emitFocusEvent: () => {
         this.topicId = ''
         this.name = ''
