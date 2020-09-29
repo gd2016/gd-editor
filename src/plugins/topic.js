@@ -90,6 +90,11 @@ export default class Topic {
         size: '10',
         ...this.params
       },
+      fetchConfig: {
+        encrypt: true,
+        fingerprint: true,
+        withCredentials: true
+      },
       domainName: this.host,
       emitFocusEvent: () => {
         this.topicId = ''
