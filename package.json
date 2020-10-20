@@ -1,7 +1,7 @@
 {
-  "name": "@portal/dls-m-editor",
+  "name": "gd-editor",
   "version": "1.3.29",
-  "description": "dls-m-editor",
+  "description": "gd-editor",
   "main": "src/index.js",
   "scripts": {
     "dev": "webpack-dev-server --mode=development --config webpack.conf.js",
@@ -12,15 +12,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://git.evatlas.com/fe-core-components/portal/dls-m-editor.git"
+    "url": "https://github.com/gd2016/gd-editor.git"
   },
   "author": "guoding",
   "license": "ISC",
   "devDependencies": {
-    "@ah/i18n": "^1.1.0",
-    "@ah/super-fetch": "^2.2.8",
-    "@portal/dls-searchbox": "^1.1.23",
-    "@portal/dls-ui": "^1.2.9",
     "clean-webpack-plugin": "^0.1.19",
     "colors": "^1.3.3",
     "copy-webpack-plugin": "^5.0.3",
@@ -49,9 +45,5 @@
     "webpack-dev-server": "^3.1.8",
     "xss": "^1.0.6",
     "jsdom": "^16.3.0"
-  },
-  "peerDependencies": {
-    "@ah/super-fetch": "^2.1.11",
-    "@portal/dls-ui": "^1.2.9"
   }
 }

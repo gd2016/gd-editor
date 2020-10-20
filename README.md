@@ -5,7 +5,7 @@
  * @LastEditTime: 2019-08-15 15:16:31
  * @LastEditors: Please set LastEditors
  -->
-# dls-m-editor  M编辑器
+# gd-editor  M编辑器
 
 ---
 
@@ -21,7 +21,7 @@
 | minHeight |   200   |  最小高度  |
 | maxHeight |   400000   |  最大高度  |
 | content |   ''   |  默认内容  |
-| host |   '__ALLHISTORY_HOSTNAME__'   |  图片上传接口host  |
+| host | ''   |  图片上传接口host  |
 | onReady |  (editor){}   | 编辑器初始化回调   |
 | maxlength | 0 | 字数限制，前端只做提示，没有限制提交 |
 | pluginParams| {} |  各个插件的额外参数 | 
@@ -40,12 +40,11 @@
 ## renderData  renderText
 
 ```javascript
-import renderData from '@portal/dls-m-editor/src/renderData' //渲染数据
-import { renderText } from '@portal/dls-m-editor/src/renderData' //渲染纯文本，逗号隔开。不渲染H1,H2,图片等非文本
+import renderData from 'gd-editor/src/renderData' //渲染数据
+import { renderText } from 'gd-editor/src/renderData' //渲染纯文本，逗号隔开。不渲染H1,H2,图片等非文本
 
 const data = [
   { type: 'TEXT', text: 'asdasd ##测试###⬇️阿萨德# ', style: 'CONTENT' },
-  { type: 'IMAGE', url: 'http://img.allhistory.com/5e8c2adf9b11d2028b89c006.jpg', height: 600, width: 960, text: '123' },
   { type: 'TEXT', text: 'asd', style: 'CONTENT' },
   { style: 'OL', text: '1212', index: 1, type: 'TEXT' },
   { type: 'TEXT', text: '121121', index: 2, style: 'UL' },
@@ -80,12 +79,12 @@ document.querySelector('.content').innerText = text
 ### Usage
 
 ```javascript
-import test from '@portal/dls-m-editor'
+import test from 'gd-editor'
 const editor = new test({
   container: document.querySelector('#editor-area'),
   pluginParams: { //修改插件参数，，例如修改话题的sug接口地址
     topic: { //键值 与toolbar对应  具体源代码查看/pugins/index.js
-      url: '/api/toppost/tag/search',
+      url: '/api/tag/search',
       label: '插入话题'
     }
   },
@@ -95,9 +94,6 @@ const editor = new test({
   }, {
     type: 'TEXT',
     text: '12312cx xc asd     as d'
-  }, {
-    type: 'IMAGE',
-    url: '//pic.evatlas.com/test-image942/7e45dc8d854f4bc0b3b18e72f441b57c'
   }],
   onReady: (editor) => {
   },
