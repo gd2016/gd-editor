@@ -25,7 +25,7 @@ export default function (data, option) {
       html += `<p><span ${index || ''} class="${item.style ? item.style.toLowerCase() : ''}">${item.text}</span></p>`
     }
     if (item.type === 'IMAGE') {
-      html += `<div class="img-box"><img src=${item.url} />`
+      html += `<div class="img-box"><img src="${item.url}" />`
       if (item.text) {
         html += `<p class="dls-image-capture">${item.text}</p></div>`
       } else {
@@ -33,7 +33,7 @@ export default function (data, option) {
       }
     }
     if (item.type === 'VIDEO') {
-      html += `<div class="video-box"><video src=${item.url}  class="video" controls ></video>`
+      html += `<div class="video-box"><video src="${item.url}"  class="video" controls ></video>`
       if (item.text) {
         html += `<p class="dls-image-capture">${item.text}</p></div>`
       } else {
